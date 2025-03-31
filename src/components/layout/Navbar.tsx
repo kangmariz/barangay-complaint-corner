@@ -12,6 +12,7 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem 
 } from '@/components/ui/dropdown-menu';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
@@ -19,6 +20,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const { user, logout } = useAuth();
+  const { toggleSidebar } = useSidebar();
   const [searchQuery, setSearchQuery] = useState('');
   
   const handleSearch = (e: React.FormEvent) => {
@@ -31,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   return (
     <nav className="bg-barangay-blue py-2 px-4 flex items-center justify-between shadow-md">
       <div className="flex items-center">
-        <Button variant="ghost" className="text-white mr-2">
+        <Button variant="ghost" className="text-white mr-2" onClick={toggleSidebar}>
           <Menu className="h-6 w-6" />
         </Button>
         <Link to="/" className="flex items-center">
