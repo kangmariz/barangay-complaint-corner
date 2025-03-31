@@ -52,8 +52,8 @@ const HomePage: React.FC = () => {
                       <span className="font-medium">{complaint.title}</span>
                       <Badge 
                         className={
-                          complaint.status === "pending" ? "bg-orange-500" : 
-                          complaint.status === "in-progress" ? "bg-blue-500" : 
+                          complaint.status === "Pending" ? "bg-orange-500" : 
+                          complaint.status === "In Progress" ? "bg-blue-500" : 
                           "bg-green-500"
                         }
                       >
