@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +99,17 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.gradient-bg {
+  @apply bg-login-gradient;
+}
+
+.barangay-sidebar {
+  background: linear-gradient(180deg, #0046ad 0%, #7e4bca 100%);
+}
+
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(90deg, #0046ad 0%, #7e4bca 100%);
 }

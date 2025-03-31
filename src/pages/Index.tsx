@@ -1,14 +1,27 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+import React, { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+
+const Index: React.FC = () => {
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    // Log for debugging
+    console.log('Index page loaded, user:', user);
+  }, [user]);
+  
+  // Redirect based on authentication state
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Redirect based on user role
+  if (user.role === 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <Navigate to="/home" replace />;
 };
 
 export default Index;
