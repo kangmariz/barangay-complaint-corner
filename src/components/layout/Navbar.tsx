@@ -29,17 +29,15 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   };
 
   return (
-    <nav className="bg-barangay-blue p-4 flex items-center justify-between">
+    <nav className="bg-barangay-blue py-2 px-4 flex items-center justify-between shadow-md">
       <div className="flex items-center">
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" className="text-white">
-            <Menu className="h-6 w-6" />
-          </Button>
-          <Link to="/" className="flex items-center">
-            <BarangayLogo className="w-10 h-10 mr-2" />
-            <span className="text-white text-2xl font-bold">BNCMS</span>
-          </Link>
-        </div>
+        <Button variant="ghost" className="text-white mr-2">
+          <Menu className="h-6 w-6" />
+        </Button>
+        <Link to="/" className="flex items-center">
+          <BarangayLogo className="w-12 h-12 mr-2" />
+          <span className="text-white text-2xl font-bold">BNCMS</span>
+        </Link>
       </div>
       
       <div className="flex-1 max-w-xl mx-4">
@@ -47,15 +45,14 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           <Input 
             type="search" 
             placeholder="Search" 
-            className="w-full pl-4 pr-10 py-2 rounded-full bg-white"
+            className="w-full pl-4 pr-12 py-2 rounded-full bg-white border-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Button 
             type="submit" 
             variant="ghost" 
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" 
-            size="icon"
+            className="absolute right-0 top-0 h-full rounded-full px-3 bg-barangay-blue text-white" 
           >
             <Search className="h-5 w-5" />
           </Button>
@@ -74,7 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
                 />
               </div>
               <div className="flex items-center">
-                <span>{user?.fullName || "Resident"}</span>
+                <span>{user?.fullName || "Anonymous"}</span>
                 <ChevronDown className="h-4 w-4 ml-1" />
               </div>
             </Button>
