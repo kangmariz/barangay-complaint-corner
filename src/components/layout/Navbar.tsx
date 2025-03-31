@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { BarangayLogo } from '@/components';
-import { Search, Menu, ChevronDown } from 'lucide-react';
+import { Search, Menu, ChevronDown, Settings, LogOut } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -79,10 +79,14 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="w-full cursor-pointer">Profile Settings</Link>
+            <DropdownMenuItem asChild className="flex items-center">
+              <Link to="/profile" className="w-full cursor-pointer">
+                <Settings className="h-4 w-4 mr-2" />
+                Profile Settings
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={logout} className="cursor-pointer">
+            <DropdownMenuItem onClick={logout} className="cursor-pointer flex items-center">
+              <LogOut className="h-4 w-4 mr-2" />
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
