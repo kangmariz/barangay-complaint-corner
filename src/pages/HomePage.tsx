@@ -24,6 +24,11 @@ const HomePage: React.FC = () => {
     setSearchResults(results);
   };
   
+  // Calculate complaint stats
+  const pendingComplaints = userComplaints.filter(c => c.status === 'Pending').length;
+  const inProgressComplaints = userComplaints.filter(c => c.status === 'In Progress').length;
+  const resolvedComplaints = userComplaints.filter(c => c.status === 'Resolved').length;
+  
   if (!user) return null;
   
   return (
@@ -33,15 +38,32 @@ const HomePage: React.FC = () => {
           Easily submit and track your complaints with Barangay Nabuad's Complaint Management System.
         </h1>
         
-        {/* Total Complaints Card */}
+        {/* Complaint Overview Card */}
         <Card className="bg-white rounded-lg shadow-md p-6 mb-6">
           <CardHeader className="p-0 mb-4">
             <CardTitle className="text-xl font-semibold">Complaint Overview</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-right">
-              <h3 className="text-lg font-semibold">Total Number of Complaints:</h3>
-              <p className="text-4xl font-bold text-barangay-blue">{userComplaints.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold">Total Complaints:</h3>
+                <p className="text-4xl font-bold text-barangay-blue">{userComplaints.length}</p>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-orange-500">Pending:</h3>
+                <p className="text-4xl font-bold text-orange-500">{pendingComplaints}</p>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-blue-500">In Progress:</h3>
+                <p className="text-4xl font-bold text-blue-500">{inProgressComplaints}</p>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-green-500">Resolved:</h3>
+                <p className="text-4xl font-bold text-green-500">{resolvedComplaints}</p>
+              </div>
             </div>
           </CardContent>
         </Card>

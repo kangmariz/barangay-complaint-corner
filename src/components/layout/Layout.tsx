@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearch }) => {
   }
   
   return (
-    <SidebarProvider defaultState="expanded">
+    <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <Sidebar />
         <div className="flex-1 flex flex-col">
