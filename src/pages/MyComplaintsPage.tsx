@@ -23,7 +23,7 @@ const MyComplaintsPage: React.FC = () => {
   return (
     <Layout onSearch={handleSearch}>
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">My Complaints</h1>
+        <h1 className="text-black text-2xl font-bold mb-6">My Complaints</h1>
         
         <div className="bg-white rounded-lg shadow-md p-6">
           <ComplaintTable complaints={searchResults} />

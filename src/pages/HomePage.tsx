@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
   return (
     <Layout onSearch={handleSearch}>
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">
+        <h1 className="text-black font-bold mb-6">
           Easily submit and track your complaints with Barangay Nabuad's Complaint Management System.
         </h1>
         
@@ -51,8 +51,8 @@ const HomePage: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-orange-500">Pending:</h3>
-                <p className="text-4xl font-bold text-orange-500">{pendingComplaints}</p>
+                <h3 className="text-lg font-semibold text-red-500">Pending:</h3>
+                <p className="text-4xl font-bold text-red-500">{pendingComplaints}</p>
               </div>
               
               <div className="text-center">
@@ -89,7 +89,7 @@ const HomePage: React.FC = () => {
                       <TableCell className="text-right">
                         <Badge 
                           className={
-                            complaint.status === "Pending" ? "bg-orange-500" : 
+                            complaint.status === "Pending" ? "bg-red-500" : 
                             complaint.status === "In Progress" ? "bg-blue-500" : 
                             "bg-green-500"
                           }

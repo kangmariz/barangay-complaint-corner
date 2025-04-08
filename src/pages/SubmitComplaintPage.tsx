@@ -19,7 +19,7 @@ const SubmitComplaintPage: React.FC = () => {
   
   return (
     <Layout>
-      <div className="container mx-auto p-6">
+      <div className="container mx-full p-6">
         <ComplaintForm />
       </div>
     </Layout>

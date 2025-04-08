@@ -31,19 +31,20 @@ const SignupForm: React.FC = () => {
 
   return (
     <div className="login-container flex flex-col items-center justify-center p-4">
-      <div className="mb-8">
+      <div>
         <BarangayLogo className="w-32 h-32" />
       </div>
       
       <div className="text-center text-white mb-4">
-        <h1 className="text-4xl font-bold mb-2">Create an Account</h1>
-        <p className="text-lg">
+        <h1 className="text-4xl font-bold mb-4">Create an Account</h1>
+        <p className="text-lg mb-2">
           Join the Barangay Nabuad Complaint Management System to submit<br />
           complaints and stay informed about barangay updates.
         </p>
+        <hr className="border-t-4 border-[#03327b] my-4"></hr>
       </div>
       
-      <div className="w-full max-w-2xl bg-white rounded-lg p-8 shadow-lg">
+      <div className="w-full max-w-md  rounded-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -55,21 +56,29 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
-              <span className="text-red-500 text-sm">*</span>
             </div>
             
             <div>
               <Input
                 type="text"
-                placeholder="Email Address / Username"
+                placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
-              <span className="text-red-500 text-sm">*</span>
             </div>
             
+           
+            <div>
+              <Input
+                type="text"
+                placeholder="Contact Number"
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md"
+              />
+            </div> 
             <div>
               <Input
                 type="password"
@@ -79,25 +88,15 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
-              <span className="text-red-500 text-sm">*</span>
             </div>
             
-            <div>
-              <Input
-                type="text"
-                placeholder="Contact Number"
-                value={contactNumber}
-                onChange={(e) => setContactNumber(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md"
-              />
-            </div>
           </div>
           
           <div className="flex justify-center">
             <Button
               type="submit"
               disabled={isLoading}
-              className="px-10 py-3 bg-barangay-blue hover:bg-blue-700 text-white rounded-md font-semibold"
+              className="w-40 bg-[#03327b] hover:bg-[#053788FF] text-white py-3 rounded-md font-semibold"
             >
               {isLoading ? 'Creating Account...' : 'Sign Up'}
             </Button>
@@ -105,10 +104,10 @@ const SignupForm: React.FC = () => {
         </form>
       </div>
       
-      <div className="mt-6 text-white">
+      <div className="mt-10 text-white">
         <p>
           Already have an account?{' '}
-          <Link to="/login" className="text-white font-bold hover:underline">
+          <Link to="/login" className="text-[#03327b] font-bold hover:text-[#053788FF]">
             Log In
           </Link>
         </p>

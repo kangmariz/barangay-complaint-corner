@@ -51,7 +51,7 @@ const ComplaintForm: React.FC = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Submit a Complaint</CardTitle>
+        <CardTitle className="text-2xl text-black font-bold">Submit a Complaint</CardTitle>
         <CardDescription>
           Fill out the form below to submit your complaint to the barangay officials.
         </CardDescription>

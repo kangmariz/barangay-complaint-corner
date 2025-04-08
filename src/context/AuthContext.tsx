@@ -1,11 +1,10 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>; // Adjusted to return boolean
   signup: (fullName: string, username: string, password: string, contactNumber: string) => Promise<boolean>;
   logout: () => void;
   updateUserProfile: (userData: Partial<User>) => void;
@@ -45,28 +44,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<boolean> => { // Changed to return boolean
     try {
-      // In a real app, this would be an API call to authenticate
-      // For demo purposes, we'll simulate a successful login with mock data
       const foundUser = mockUsers.find(u => u.username === username);
-      
-      if (foundUser && password === 'password') { // Using "password" as the fixed password for all mock users
+  
+      if (foundUser && password === 'password') { // Simulating password check
         setUser(foundUser);
         localStorage.setItem('barangay_user', JSON.stringify(foundUser));
+  
         toast({
           title: "Login successful",
           description: `Welcome back, ${foundUser.fullName}!`,
         });
+
+        // Return true for successful login
         return true;
       }
-      
+  
       toast({
         variant: "destructive",
         title: "Login failed",
         description: "Invalid username or password",
       });
-      return false;
+      return false; // Return false if login failed
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login error",
         description: "An error occurred while trying to log in.",
       });
-      return false;
+      return false; // Return false on error
     }
   };
 
@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       toast({
         title: "Account created",
-        description: "You've successfully signed up!",
+        description: "✅ You've successfully signed up!",
       });
       return true;
     } catch (error) {
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('barangay_user');
     toast({
       title: "Logged out",
-      description: "You've been successfully logged out",
+      description: "✅ You've been successfully logged out",
     });
   };
   
@@ -149,7 +149,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       toast({
         title: "Profile updated",
-        description: "Your profile has been successfully updated",
+        description: "✅ Your profile has been successfully updated",
       });
     }
   };

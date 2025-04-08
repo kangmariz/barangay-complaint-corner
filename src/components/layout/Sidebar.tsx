@@ -25,16 +25,33 @@ const Sidebar: React.FC = () => {
         "pt-6 pb-4 flex flex-col items-center",
         isCollapsed && "px-2"
       )}>
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-white/20 mb-3">
+        {/* Logo Resizing */}
+        <div className={cn(
+          "mb-2 transition-all duration-300",
+          isCollapsed ? "w-10 h-10" : "w-[140px] h-[140px]"
+        )}>
           <img
-            src="/public/lovable-uploads/3980b204-d0cf-4f1a-bdfd-61e2019f00cf.png"
-            alt="User"
-            className="h-full w-full object-cover"
+            src="/public/uploads/Logo2.png"
+            alt="logo"
+            className="h-full w-full object-contain"
           />
         </div>
-        {!isCollapsed && (
-          <h2 className="text-white text-xl font-semibold">{user?.fullName || "Resident"}</h2>
-        )}
+  
+        {/* Title Resizing */}
+        <div className="flex justify-center items-center h-full text-center">
+          <h2 className={cn(
+            "text-white font-bold transition-all duration-300",
+            isCollapsed ? "text-sm" : "text-2xl"
+          )}>
+            BNCMS<br />
+            <span className={cn(
+              "font-normal transition-all duration-300",
+              isCollapsed ? "text-[7px]" : "text-[10.5px]"
+            )}>
+              (Barangay Nabuad Complaint Management System)
+            </span>
+          </h2>
+        </div>
       </div>
       
       <div className="border-t border-white/20 my-4"></div>
