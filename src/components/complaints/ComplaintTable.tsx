@@ -22,9 +22,10 @@ import { useComplaints } from '@/context/ComplaintContext';
 
 interface ComplaintTableProps {
   complaints: Complaint[];
+  readOnly?: boolean;
 }
 
-const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints }) => {
+const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = false }) => {
   const { user } = useAuth();
   const { updateComplaintStatus } = useComplaints();
   const isAdmin = user?.role === 'admin';
@@ -82,7 +83,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints }) => {
                   )}
                 </TableCell>
                 <TableCell>
-                  {isAdmin ? (
+                  {isAdmin && !readOnly ? (
                     <Select 
                       defaultValue={complaint.status} 
                       onValueChange={(value) => handleStatusChange(complaint.id, value)}

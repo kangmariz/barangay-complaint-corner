@@ -26,7 +26,7 @@ const ComplaintsPage: React.FC = () => {
         <h1 className="text-2xl font-bold mb-6">Complaints Management</h1>
         
         <div className="bg-white rounded-lg shadow-md p-6">
-          <ComplaintTable complaints={searchResults} />
+          <ComplaintTable complaints={searchResults} readOnly={false} />
         </div>
       </div>
     </Layout>

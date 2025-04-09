@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,12 +21,18 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const { user, logout } = useAuth();
   const { toggleSidebar } = useSidebar();
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch) {
       onSearch(searchQuery);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -72,17 +79,15 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem asChild className="flex items-center">
-              <Link to="/profile" className="w-full cursor-pointer">
+              <Link to="/profile" className="w-full cursor-pointer flex items-center">
                 <Settings className="h-4 w-4 mr-2" />
                 Profile Settings
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={logout} className="cursor-pointer flex items-center">
-              <Link to="/login">
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer flex items-center">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
-              </Link>
-               </DropdownMenuItem>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

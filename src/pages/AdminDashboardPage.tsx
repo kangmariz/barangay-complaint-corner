@@ -27,9 +27,9 @@ const AdminDashboardPage: React.FC = () => {
         
         <ComplaintStats complaints={complaints} />
         
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">All Complaints</h2>
-          <ComplaintTable complaints={searchResults} />
+        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+          <h2 className="text-xl font-semibold mb-4">Recent Complaints</h2>
+          <ComplaintTable complaints={searchResults.slice(0, 5)} readOnly={true} />
         </div>
       </div>
     </Layout>
