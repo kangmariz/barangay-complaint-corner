@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
@@ -5,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>; // Adjusted to return boolean
-  signup: (fullName: string, username: string, password: string, contactNumber: string) => Promise<boolean>;
+  signup: (fullName: string, username: string, password: string, email: string) => Promise<boolean>;
   logout: () => void;
   updateUserProfile: (userData: Partial<User>) => void;
 }
@@ -82,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     fullName: string, 
     username: string, 
     password: string, 
-    contactNumber: string
+    email: string
   ): Promise<boolean> => {
     try {
       // Check if username already exists
@@ -100,8 +101,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: (mockUsers.length + 1).toString(),
         fullName,
         username,
-        email: `${username}@example.com`, // Generating a fake email for demo
-        contactNumber,
+        email,
+        contactNumber: '', // Keep contactNumber for compatibility, but it's empty
         role: 'resident'
       };
 

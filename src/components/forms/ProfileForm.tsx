@@ -20,7 +20,6 @@ const ProfileForm: React.FC = () => {
   
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [contactNumber, setContactNumber] = useState(user?.contactNumber || '');
-  const [email, setEmail] = useState(user?.email || '');
   
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -32,8 +31,7 @@ const ProfileForm: React.FC = () => {
     // Update user profile
     updateUserProfile({
       fullName,
-      contactNumber,
-      email
+      contactNumber
     });
   };
   
@@ -104,11 +102,12 @@ const ProfileForm: React.FC = () => {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  className="border border-gray-300 rounded-md"
+                  value={user?.email || ''}
+                  readOnly
+                  disabled
+                  className="border border-gray-300 rounded-md bg-gray-100"
                 />
+                <p className="text-sm text-gray-500 mt-1">Email address cannot be changed</p>
               </div>
               
               <div className="space-y-2">

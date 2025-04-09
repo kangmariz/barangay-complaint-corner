@@ -5,22 +5,35 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BarangayLogo } from '@/components';
+import { useToast } from '@/components/ui/use-toast';
 
 const SignupForm: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords don't match",
+        description: "Please make sure both passwords match",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      const success = await signup(fullName, username, password, contactNumber);
+      const success = await signup(fullName, username, password, email);
       if (success) {
         navigate('/home');
       }
@@ -44,7 +57,7 @@ const SignupForm: React.FC = () => {
         <hr className="border-t-4 border-[#03327b] my-4"></hr>
       </div>
       
-      <div className="w-full max-w-md  rounded-lg">
+      <div className="w-full max-w-md rounded-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -69,16 +82,17 @@ const SignupForm: React.FC = () => {
               />
             </div>
             
-           
             <div>
               <Input
-                type="text"
-                placeholder="Contact Number"
-                value={contactNumber}
-                onChange={(e) => setContactNumber(e.target.value)}
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
-            </div> 
+            </div>
+            
             <div>
               <Input
                 type="password"
@@ -90,6 +104,16 @@ const SignupForm: React.FC = () => {
               />
             </div>
             
+            <div>
+              <Input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full p-3 border border-gray-300 rounded-md"
+              />
+            </div>
           </div>
           
           <div className="flex justify-center">
