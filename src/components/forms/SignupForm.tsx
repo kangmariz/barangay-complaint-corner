@@ -59,7 +59,7 @@ const SignupForm: React.FC = () => {
       
       <div className="w-full max-w-md rounded-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col space-y-4">
             <div>
               <Input
                 type="text"
