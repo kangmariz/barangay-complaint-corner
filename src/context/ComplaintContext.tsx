@@ -127,18 +127,18 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     return filtered;
   };
 
+  const contextValue: ComplaintContextType = {
+    complaints,
+    userComplaints,
+    addComplaint,
+    updateComplaint,
+    updateComplaintStatus,
+    deleteComplaint,
+    searchComplaints
+  };
+
   return (
-    <ComplaintContext.Provider
-      value={{
-        complaints,
-        userComplaints,
-        addComplaint,
-        updateComplaint,
-        updateComplaintStatus,
-        deleteComplaint,
-        searchComplaints
-      }}
-    >
+    <ComplaintContext.Provider value={contextValue}>
       {children}
     </ComplaintContext.Provider>
   );

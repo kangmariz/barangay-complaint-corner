@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components';
 import { useComplaints } from '@/context/ComplaintContext';
 import { useAuth } from '@/context/AuthContext';
@@ -18,7 +18,14 @@ import {
 const HomePage: React.FC = () => {
   const { user } = useAuth();
   const { userComplaints, searchComplaints } = useComplaints();
-  const [searchResults, setSearchResults] = useState(userComplaints);
+  const [searchResults, setSearchResults] = useState([]);
+  
+  useEffect(() => {
+    // Initialize search results with user complaints when component mounts
+    if (userComplaints) {
+      setSearchResults(userComplaints);
+    }
+  }, [userComplaints]);
   
   const handleSearch = (query: string) => {
     const results = searchComplaints(query);
@@ -26,9 +33,9 @@ const HomePage: React.FC = () => {
   };
   
   // Calculate complaint stats
-  const pendingComplaints = userComplaints.filter(c => c.status === 'Pending').length;
-  const inProgressComplaints = userComplaints.filter(c => c.status === 'In Progress').length;
-  const resolvedComplaints = userComplaints.filter(c => c.status === 'Resolved').length;
+  const pendingComplaints = userComplaints?.filter(c => c.status === 'Pending').length || 0;
+  const inProgressComplaints = userComplaints?.filter(c => c.status === 'In Progress').length || 0;
+  const resolvedComplaints = userComplaints?.filter(c => c.status === 'Resolved').length || 0;
   
   if (!user) return null;
   
@@ -48,7 +55,7 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <h3 className="text-lg font-semibold">Total Complaints:</h3>
-                <p className="text-4xl font-bold text-barangay-blue">{userComplaints.length}</p>
+                <p className="text-4xl font-bold text-barangay-blue">{userComplaints?.length || 0}</p>
               </div>
               
               <div className="text-center">
@@ -75,7 +82,7 @@ const HomePage: React.FC = () => {
             <CardTitle className="text-xl font-semibold">Your Recent Complaints</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {(searchResults.length > 0 ? searchResults : userComplaints.slice(0, 5)).length > 0 ? (
+            {(searchResults && searchResults.length > 0) ? (
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
@@ -85,7 +92,7 @@ const HomePage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(searchResults.length > 0 ? searchResults : userComplaints.slice(0, 5)).map((complaint) => (
+                  {searchResults.map((complaint) => (
                     <TableRow key={complaint.id}>
                       <TableCell className="font-medium">{complaint.title}</TableCell>
                       <TableCell>{format(new Date(complaint.createdAt), 'MMM d, yyyy')}</TableCell>
