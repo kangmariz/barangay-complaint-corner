@@ -23,9 +23,10 @@ import { useComplaints } from '@/context/ComplaintContext';
 interface ComplaintTableProps {
   complaints: Complaint[];
   readOnly?: boolean;
+  isEditable?: (complaint: Complaint) => boolean;
 }
 
-const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = false }) => {
+const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = false, isEditable }) => {
   const { user } = useAuth();
   const { updateComplaintStatus } = useComplaints();
   const isAdmin = user?.role === 'admin';

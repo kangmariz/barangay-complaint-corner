@@ -34,7 +34,7 @@ const MyComplaintsPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <ComplaintTable 
             complaints={searchResults} 
-            isEditable={(complaint) => canEdit(complaint)} 
+            isEditable={canEdit} 
           />
           <div className="mt-4 text-sm text-gray-600">
             <p>Note: You can only edit complaints with "Pending" status.</p>
