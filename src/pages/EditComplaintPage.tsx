@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components';
 import { useComplaints } from '@/context/ComplaintContext';
@@ -16,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Upload, CheckCircle } from 'lucide-react';
+import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const EditComplaintPage: React.FC = () => {
@@ -35,8 +34,8 @@ const EditComplaintPage: React.FC = () => {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showNotEditable, setShowNotEditable] = useState(false);
   
-  // Find the complaint by ID
   useEffect(() => {
     if (id && userComplaints) {
       const foundComplaint = userComplaints.find(c => c.id === parseInt(id));
@@ -49,40 +48,35 @@ const EditComplaintPage: React.FC = () => {
         setFullName(foundComplaint.fullName || '');
         setContactNumber(foundComplaint.contactNumber || '');
         setPhotoUrl(foundComplaint.photo);
+        
+        if (foundComplaint.status !== 'Pending') {
+          setShowNotEditable(true);
+        }
       }
     }
   }, [id, userComplaints]);
   
-  // Check if complaint is editable
   const isEditable = complaint?.status === 'Pending';
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isEditable) {
+      setShowNotEditable(true);
       return;
     }
     
-    // In a real app, you would call an API to update the complaint
-    // For now, we'll just simulate success
     setShowSuccess(true);
     setTimeout(() => {
       navigate('/my-complaints');
     }, 2000);
   };
   
-  // Redirect if not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
   
-  // Redirect if complaint not found or not owned by user
   if (id && !complaint) {
-    return <Navigate to="/my-complaints" replace />;
-  }
-  
-  // Redirect if complaint is not editable
-  if (complaint && !isEditable) {
     return <Navigate to="/my-complaints" replace />;
   }
   
@@ -98,6 +92,16 @@ const EditComplaintPage: React.FC = () => {
               </AlertDescription>
             </Alert>
           )}
+          
+          {showNotEditable && (
+            <Alert className="bg-amber-50 border-amber-200 mb-4">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertDescription className="text-amber-700">
+                This complaint cannot be edited because its status is {complaint?.status}. Only complaints with 'Pending' status can be edited.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <CardHeader>
             <CardTitle className="text-2xl text-black font-bold">Edit Complaint</CardTitle>
             <CardDescription>
@@ -250,24 +254,23 @@ const EditComplaintPage: React.FC = () => {
                 </div>
               </div>
               
-              {isEditable && (
-                <div className="flex justify-between pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/my-complaints')}
-                    className="px-8 py-2 rounded-md text-lg"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-barangay-blue text-white px-8 py-2 rounded-md text-lg"
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              )}
+              <div className="flex justify-between pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/my-complaints')}
+                  className="px-8 py-2 rounded-md text-lg"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-barangay-blue text-white px-8 py-2 rounded-md text-lg"
+                  disabled={!isEditable}
+                >
+                  Save Changes
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -276,7 +279,6 @@ const EditComplaintPage: React.FC = () => {
   );
 };
 
-// Helper function to handle viewing photos
 const handleViewPhoto = (photoUrl?: string) => {
   if (photoUrl) {
     window.open(photoUrl, '_blank');
