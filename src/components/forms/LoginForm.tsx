@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -9,12 +10,14 @@ const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, user } = useAuth();  // Destructure user to access the logged-in user
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { login, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrors({});
 
     try {
       const success = await login(username, password);
@@ -26,7 +29,12 @@ const LoginForm: React.FC = () => {
         } else {
           navigate('/home');  // Redirect to home if resident
         }
+      } else {
+        setErrors({ credentials: "Invalid username or password" });
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrors({ form: "Failed to log in. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +66,9 @@ const LoginForm: React.FC = () => {
               required
               className="w-full p-3 border border-gray-300 rounded-md"
             />
+            {errors.username && (
+              <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+            )}
           </div>
 
           <div>
@@ -69,7 +80,16 @@ const LoginForm: React.FC = () => {
               required
               className="w-full p-3 border border-gray-300 rounded-md"
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
+          
+          {(errors.credentials || errors.form) && (
+            <p className="text-red-500 text-sm text-center">
+              {errors.credentials || errors.form}
+            </p>
+          )}
 
           <div className="flex justify-center">
             <Button

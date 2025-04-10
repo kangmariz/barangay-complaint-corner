@@ -5,6 +5,7 @@ import { useComplaints } from '@/context/ComplaintContext';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 import {
   Table,
   TableBody,
@@ -79,6 +80,7 @@ const HomePage: React.FC = () => {
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead>Title</TableHead>
+                    <TableHead>Date Submitted</TableHead>
                     <TableHead className="text-right">Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -86,6 +88,7 @@ const HomePage: React.FC = () => {
                   {(searchResults.length > 0 ? searchResults : userComplaints.slice(0, 5)).map((complaint) => (
                     <TableRow key={complaint.id}>
                       <TableCell className="font-medium">{complaint.title}</TableCell>
+                      <TableCell>{format(new Date(complaint.createdAt), 'MMM d, yyyy')}</TableCell>
                       <TableCell className="text-right">
                         <Badge 
                           className={

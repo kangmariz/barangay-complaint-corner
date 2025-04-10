@@ -15,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
-import { Upload } from 'lucide-react';
+import { Upload, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ComplaintForm: React.FC = () => {
   const { addComplaint } = useComplaints();
@@ -29,6 +30,7 @@ const ComplaintForm: React.FC = () => {
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [contactNumber, setContactNumber] = useState(user?.contactNumber || '');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,11 +47,30 @@ const ComplaintForm: React.FC = () => {
     };
     
     addComplaint(complaintData);
-    navigate('/my-complaints');
+    setShowSuccess(true);
+    
+    // Reset form after submission
+    setTitle('');
+    setDescription('');
+    setPurok('');
+    setPhoto(null);
+    
+    // Navigate to my complaints after a short delay
+    setTimeout(() => {
+      navigate('/my-complaints');
+    }, 2000);
   };
   
   return (
     <Card className="w-full max-w-4xl mx-auto">
+      {showSuccess && (
+        <Alert className="bg-green-50 border-green-200 mb-4">
+          <CheckCircle className="h-5 w-5 text-green-500" />
+          <AlertDescription className="text-green-700">
+            Your complaint has been successfully submitted!
+          </AlertDescription>
+        </Alert>
+      )}
       <CardHeader>
         <CardTitle className="text-2xl text-black font-bold">Submit a Complaint</CardTitle>
         <CardDescription>
@@ -68,25 +89,33 @@ const ComplaintForm: React.FC = () => {
           </div>
           
           {!isAnonymous && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName" className="flex items-center">
+                  Full Name
+                  <span className="text-red-500 ml-1">*</span>
+                </Label>
                 <Input
                   id="fullName"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   className="border border-gray-300 rounded-md"
+                  required={!isAnonymous}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contactNumber">Contact Number</Label>
+                <Label htmlFor="contactNumber" className="flex items-center">
+                  Contact Number
+                  <span className="text-red-500 ml-1">*</span>
+                </Label>
                 <Input
                   id="contactNumber"
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   placeholder="Enter your contact number"
                   className="border border-gray-300 rounded-md"
+                  required={!isAnonymous}
                 />
               </div>
             </div>

@@ -35,6 +35,7 @@ const initialComplaints: Complaint[] = [
     purok: 'Purok 3',
     status: 'Resolved',
     anonymous: true,
+    userId: '2',
     createdAt: new Date().toISOString()
   }
 ];
@@ -76,6 +77,14 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
           : complaint
       )
     );
+    
+    // Dispatch event for status change
+    window.dispatchEvent(
+      new CustomEvent('complaintStatusUpdated', { 
+        detail: { id, status } 
+      })
+    );
+    
     toast({
       title: "Status updated",
       description: `Complaint has been marked as ${status}`,

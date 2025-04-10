@@ -14,6 +14,7 @@ const SignupForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -21,12 +22,18 @@ const SignupForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Reset errors
+    setErrors({});
+    
+    // Validate fields
+    const newErrors: Record<string, string> = {};
+    
     if (password !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Passwords don't match",
-        description: "Please make sure both passwords match",
-      });
+      newErrors.confirmPassword = "Passwords don't match";
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
     
@@ -37,6 +44,9 @@ const SignupForm: React.FC = () => {
       if (success) {
         navigate('/home');
       }
+    } catch (error) {
+      console.error("Signup error:", error);
+      setErrors({ form: "Failed to create account. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -44,9 +54,9 @@ const SignupForm: React.FC = () => {
 
   return (
     <div className="login-container flex flex-col items-center justify-center p-4">
-      <div>
+      <Link to="/home">
         <BarangayLogo className="w-32 h-32" />
-      </div>
+      </Link>
       
       <div className="text-center text-white mb-4">
         <h1 className="text-4xl font-bold mb-4">Create an Account</h1>
@@ -59,7 +69,7 @@ const SignupForm: React.FC = () => {
       
       <div className="w-full max-w-md rounded-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col space-y-4">
+          <div className="space-y-4">
             <div>
               <Input
                 type="text"
@@ -69,6 +79,9 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
+              {errors.fullName && (
+                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+              )}
             </div>
             
             <div>
@@ -80,6 +93,9 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
+              {errors.username && (
+                <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+              )}
             </div>
             
             <div>
@@ -91,6 +107,9 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
             
             <div>
@@ -102,6 +121,9 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              )}
             </div>
             
             <div>
@@ -113,8 +135,15 @@ const SignupForm: React.FC = () => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+              )}
             </div>
           </div>
+          
+          {errors.form && (
+            <p className="text-red-500 text-sm text-center">{errors.form}</p>
+          )}
           
           <div className="flex justify-center">
             <Button

@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle } from 'lucide-react';
 
 const ProfileForm: React.FC = () => {
   const { user, updateUserProfile } = useAuth();
@@ -26,6 +28,9 @@ const ProfileForm: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
+  const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
+  const [passwordUpdateSuccess, setPasswordUpdateSuccess] = useState(false);
+  
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -35,6 +40,9 @@ const ProfileForm: React.FC = () => {
       email,
       contactNumber
     });
+    
+    setProfileUpdateSuccess(true);
+    setTimeout(() => setProfileUpdateSuccess(false), 3000);
   };
   
   const handlePasswordChange = (e: React.FormEvent) => {
@@ -60,10 +68,8 @@ const ProfileForm: React.FC = () => {
     }
     
     // In a real app, you would call an API to change the password
-    toast({
-      title: "Password updated",
-      description: "Your password has been changed successfully",
-    });
+    setPasswordUpdateSuccess(true);
+    setTimeout(() => setPasswordUpdateSuccess(false), 3000);
     
     // Reset form
     setCurrentPassword('');
@@ -87,6 +93,14 @@ const ProfileForm: React.FC = () => {
           </TabsList>
           
           <TabsContent value="profile">
+            {profileUpdateSuccess && (
+              <Alert className="bg-green-50 border-green-200 mb-4">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  Your profile has been successfully updated!
+                </AlertDescription>
+              </Alert>
+            )}
             <form onSubmit={handleProfileUpdate} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
@@ -134,6 +148,14 @@ const ProfileForm: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="password">
+            {passwordUpdateSuccess && (
+              <Alert className="bg-green-50 border-green-200 mb-4">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  Your password has been successfully changed!
+                </AlertDescription>
+              </Alert>
+            )}
             <form onSubmit={handlePasswordChange} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
