@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components';
 import { useComplaints } from '@/context/ComplaintContext';
@@ -17,12 +18,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 const EditComplaintPage: React.FC = () => {
   const { user } = useAuth();
-  const { userComplaints, updateComplaintStatus } = useComplaints();
+  const { userComplaints, updateComplaint } = useComplaints();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [complaint, setComplaint] = useState<any>(null);
   const [title, setTitle] = useState('');
@@ -66,10 +69,43 @@ const EditComplaintPage: React.FC = () => {
       return;
     }
     
+    if (!isAnonymous && (!fullName || !contactNumber)) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const updatedComplaint = {
+      ...complaint,
+      title,
+      description,
+      purok,
+      anonymous: isAnonymous,
+      fullName: isAnonymous ? undefined : fullName,
+      contactNumber: isAnonymous ? undefined : contactNumber,
+      photo: photoUrl
+    };
+    
+    updateComplaint(updatedComplaint);
     setShowSuccess(true);
+    
+    toast({
+      title: "Changes saved",
+      description: "Your complaint has been successfully updated.",
+    });
+    
     setTimeout(() => {
       navigate('/my-complaints');
     }, 2000);
+  };
+  
+  const handleViewPhoto = (photoUrl?: string) => {
+    if (photoUrl) {
+      window.open(photoUrl, '_blank');
+    }
   };
   
   if (!user) {
@@ -277,12 +313,6 @@ const EditComplaintPage: React.FC = () => {
       </div>
     </Layout>
   );
-};
-
-const handleViewPhoto = (photoUrl?: string) => {
-  if (photoUrl) {
-    window.open(photoUrl, '_blank');
-  }
 };
 
 export default EditComplaintPage;

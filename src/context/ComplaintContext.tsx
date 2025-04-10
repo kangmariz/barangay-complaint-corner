@@ -9,6 +9,8 @@ interface ComplaintContextType {
   userComplaints: Complaint[];
   addComplaint: (complaint: Omit<Complaint, 'id' | 'status' | 'createdAt'>) => void;
   updateComplaintStatus: (id: number, status: Complaint['status']) => void;
+  updateComplaint: (updatedComplaint: Complaint) => void;
+  deleteComplaint: (id: number) => void;
   searchComplaints: (query: string) => Complaint[];
 }
 
@@ -69,6 +71,25 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
   };
 
+  const updateComplaint = (updatedComplaint: Complaint) => {
+    setComplaints(
+      complaints.map(complaint => 
+        complaint.id === updatedComplaint.id
+          ? { ...updatedComplaint }
+          : complaint
+      )
+    );
+  };
+
+  const deleteComplaint = (id: number) => {
+    setComplaints(complaints.filter(complaint => complaint.id !== id));
+    
+    toast({
+      title: "Complaint deleted",
+      description: "The complaint has been successfully removed.",
+    });
+  };
+
   const updateComplaintStatus = (id: number, status: Complaint['status']) => {
     setComplaints(
       complaints.map(complaint => 
@@ -112,7 +133,9 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
         complaints,
         userComplaints,
         addComplaint,
+        updateComplaint,
         updateComplaintStatus,
+        deleteComplaint,
         searchComplaints
       }}
     >
