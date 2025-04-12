@@ -105,29 +105,29 @@ const MyComplaintsPage: React.FC = () => {
   return (
     <Layout onSearch={handleSearch}>
       <div className="container mx-auto px-4 sm:px-6 lg:p-6">
-        <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'} mb-6`}>
-          <h1 className="text-black text-2xl font-bold">My Complaints</h1>
-          <div className={`flex ${isMobile ? 'flex-col w-full gap-2' : 'gap-4'}`}>
-            <Select value={statusFilter} onValueChange={handleFilterChange}>
-              <SelectTrigger className={`${isMobile ? 'w-full' : 'w-[180px]'}`}>
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Complaints</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              onClick={handleCreateNew}
-              className="bg-barangay-blue hover:bg-blue-700 text-white"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" /> New Complaint
-            </Button>
-          </div>
+        <h1 className="text-black text-2xl font-bold mb-4">My Complaints</h1>
+        
+        {/* Reorganized filter and button - placed below title */}
+        <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between'} mb-6`}>
+          <Button 
+            onClick={handleCreateNew}
+            className="bg-barangay-blue hover:bg-blue-700 text-white"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" /> New Complaint
+          </Button>
+          
+          <Select value={statusFilter} onValueChange={handleFilterChange}>
+            <SelectTrigger className={`${isMobile ? 'w-full mt-2' : 'w-[180px]'}`}>
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Complaints</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         {notification && (
