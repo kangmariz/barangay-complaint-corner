@@ -4,7 +4,7 @@ import { Complaint } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
-import { Pencil, Eye, Trash2, FileText } from 'lucide-react';
+import { Pencil, Eye, Trash2, FileText, MessageSquare } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -34,16 +34,23 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
 
 interface ComplaintTableProps {
   complaints: Complaint[];
   readOnly?: boolean;
   isEditable?: (complaint: Complaint) => boolean;
+  hideActions?: boolean;
 }
 
-const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = false, isEditable }) => {
+const ComplaintTable: React.FC<ComplaintTableProps> = ({ 
+  complaints, 
+  readOnly = false, 
+  isEditable,
+  hideActions = false 
+}) => {
   const { user } = useAuth();
-  const { updateComplaintStatus, deleteComplaint } = useComplaints();
+  const { updateComplaintStatus, deleteComplaint, addComment } = useComplaints();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isAdmin = user?.role === 'admin';
@@ -52,6 +59,9 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   const [localComplaints, setLocalComplaints] = useState<Complaint[]>(complaints);
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentComplaintId, setCommentComplaintId] = useState<number | null>(null);
   
   // Update local complaints when the props change
   useEffect(() => {
@@ -73,12 +83,6 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   
   const handleStatusChange = (id: number, value: string) => {
     updateComplaintStatus(id, value as Complaint['status']);
-    
-    // Show toast notification
-    toast({
-      title: "Status Updated",
-      description: `Complaint status changed to ${value}`,
-    });
     
     // Update local state for immediate UI update
     setLocalComplaints(
@@ -113,12 +117,6 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
       // Update local state for immediate UI update
       setLocalComplaints(localComplaints.filter(c => c.id !== complaintToDelete.id));
       
-      // Show toast notification
-      toast({
-        title: "Complaint Deleted",
-        description: "The complaint has been successfully deleted.",
-      });
-      
       // Close dialog
       setDeleteDialogOpen(false);
       setComplaintToDelete(null);
@@ -128,6 +126,44 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   const handleViewDetails = (complaint: Complaint) => {
     setSelectedComplaint(complaint);
     setViewDetailsOpen(true);
+  };
+  
+  const handleAddCommentClick = (complaintId: number) => {
+    setCommentComplaintId(complaintId);
+    setCommentDialogOpen(true);
+  };
+  
+  const handleSubmitComment = () => {
+    if (!commentComplaintId || !commentText.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a comment before submitting.",
+      });
+      return;
+    }
+    
+    addComment(commentComplaintId, commentText);
+    setCommentText('');
+    setCommentDialogOpen(false);
+    
+    // Update UI for comment count
+    setLocalComplaints(prevComplaints => 
+      prevComplaints.map(complaint => {
+        if (complaint.id === commentComplaintId) {
+          const updatedComments = [...(complaint.comments || []), {
+            id: Date.now(),
+            text: commentText,
+            createdAt: new Date().toISOString(),
+            userId: user?.id || '',
+            userName: user?.fullName || user?.username || 'Anonymous'
+          }];
+          
+          return { ...complaint, comments: updatedComments };
+        }
+        return complaint;
+      })
+    );
   };
   
   return (
@@ -144,7 +180,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Submitted On</TableHead>
               {isAdmin && <TableHead className="text-white">Contact Info</TableHead>}
-              <TableHead className="text-white">Actions</TableHead>
+              {!hideActions && <TableHead className="text-white">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -215,43 +251,62 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
                       )}
                     </TableCell>
                   )}
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleViewDetails(complaint)} 
-                        className="text-purple-500"
-                      >
-                        <FileText className="h-4 w-4 mr-1" />
-                        Details
-                      </Button>
-                      
-                      {!isAdmin && isEditable && isEditable(complaint) && (
+                  {!hideActions && (
+                    <TableCell>
+                      <div className="flex space-x-2">
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => handleEditComplaint(complaint)} 
-                          className="text-blue-500"
+                          onClick={() => handleViewDetails(complaint)} 
+                          className="text-purple-500"
                         >
-                          <Pencil className="h-4 w-4 mr-1" />
-                          Edit
+                          <FileText className="h-4 w-4 mr-1" />
+                          Details
                         </Button>
-                      )}
-                      
-                      {isAdmin && complaint.status === 'Resolved' && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleDeleteClick(complaint)} 
-                          className="text-red-500"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+                        
+                        {!isAdmin && isEditable && isEditable(complaint) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEditComplaint(complaint)} 
+                            className="text-blue-500"
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        
+                        {isAdmin && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleAddCommentClick(complaint.id)} 
+                            className="text-green-500"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            Comment
+                            {complaint.comments && complaint.comments.length > 0 && (
+                              <span className="ml-1 bg-green-100 text-green-800 rounded-full px-2 py-0.5 text-xs">
+                                {complaint.comments.length}
+                              </span>
+                            )}
+                          </Button>
+                        )}
+                        
+                        {isAdmin && complaint.status === 'Resolved' && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDeleteClick(complaint)} 
+                            className="text-red-500"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
@@ -286,6 +341,41 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
         isOpen={viewDetailsOpen} 
         onOpenChange={setViewDetailsOpen} 
       />
+      
+      {/* Add Comment Dialog */}
+      <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Comment</DialogTitle>
+            <DialogDescription>
+              Add a comment to this complaint to provide feedback or instructions for the resident.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <Input
+              placeholder="Type your comment here..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              className="w-full"
+            />
+            {commentText.trim() === '' && (
+              <p className="text-red-500 text-xs mt-1">Comment cannot be empty</p>
+            )}
+          </div>
+          <DialogFooter className="flex justify-between mt-4">
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              onClick={handleSubmitComment} 
+              disabled={commentText.trim() === ''}
+            >
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Submit Comment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

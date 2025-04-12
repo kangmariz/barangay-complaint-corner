@@ -6,7 +6,14 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Filter } from 'lucide-react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 const ComplaintsPage: React.FC = () => {
   const { user } = useAuth();
@@ -14,6 +21,7 @@ const ComplaintsPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState(complaints);
   const { toast } = useToast();
   const [showNotification, setShowNotification] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("All");
   
   // Listen for status updates
   React.useEffect(() => {
@@ -32,7 +40,19 @@ const ComplaintsPage: React.FC = () => {
   
   const handleSearch = (query: string) => {
     const results = searchComplaints(query);
-    setSearchResults(results);
+    setSearchResults(applyStatusFilter(results, statusFilter));
+  };
+  
+  const applyStatusFilter = (complaintsToFilter: any[], status: string) => {
+    if (status === "All") {
+      return complaintsToFilter;
+    }
+    return complaintsToFilter.filter(complaint => complaint.status === status);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setSearchResults(applyStatusFilter(complaints, value));
   };
   
   // Redirect non-admin users
@@ -53,6 +73,25 @@ const ComplaintsPage: React.FC = () => {
             </AlertDescription>
           </Alert>
         )}
+        
+        <div className="flex justify-end mb-4">
+          <div className="w-48">
+            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+              <SelectTrigger className="w-full">
+                <div className="flex items-center">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by status" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Complaints</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Resolved">Resolved</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         
         <div className="bg-white rounded-lg shadow-md p-6">
           <ComplaintTable complaints={searchResults} readOnly={false} />

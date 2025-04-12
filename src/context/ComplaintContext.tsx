@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Complaint } from '@/types';
 import { useAuth } from './AuthContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface ComplaintContextType {
   complaints: Complaint[];
@@ -12,6 +12,7 @@ interface ComplaintContextType {
   updateComplaint: (updatedComplaint: Complaint) => void;
   deleteComplaint: (id: number) => void;
   searchComplaints: (query: string) => Complaint[];
+  addComment: (id: number, comment: string) => void;
 }
 
 const ComplaintContext = createContext<ComplaintContextType | undefined>(undefined);
@@ -28,7 +29,8 @@ const initialComplaintsData: Complaint[] = [
     fullName: 'John Doe',
     contactNumber: '09123456789',
     userId: '1',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    comments: []
   },
   {
     id: 2,
@@ -38,7 +40,8 @@ const initialComplaintsData: Complaint[] = [
     status: 'Resolved',
     anonymous: true,
     userId: '2',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    comments: []
   }
 ];
 
@@ -75,7 +78,8 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
       id: highestId + 1,
       status: 'Pending',
       createdAt: new Date().toISOString(),
-      userId: user?.id
+      userId: user?.id,
+      comments: []
     };
     
     const updatedComplaints = [...complaints, complaintToAdd];
@@ -134,6 +138,35 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
   };
 
+  const addComment = (id: number, comment: string) => {
+    if (!user) return;
+    
+    const updatedComplaints = complaints.map(complaint => {
+      if (complaint.id === id) {
+        const newComment = {
+          id: Date.now(),
+          text: comment,
+          createdAt: new Date().toISOString(),
+          userId: user.id,
+          userName: user.fullName || user.username
+        };
+        
+        return {
+          ...complaint,
+          comments: [...(complaint.comments || []), newComment]
+        };
+      }
+      return complaint;
+    });
+    
+    setComplaints(updatedComplaints);
+    
+    toast({
+      title: "Comment added",
+      description: "Your comment has been added to the complaint.",
+    });
+  };
+
   const searchComplaints = (query: string): Complaint[] => {
     if (!query) return user?.role === 'admin' ? complaints : userComplaints;
     
@@ -156,7 +189,8 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     updateComplaint,
     updateComplaintStatus,
     deleteComplaint,
-    searchComplaints
+    searchComplaints,
+    addComment
   };
 
   return (

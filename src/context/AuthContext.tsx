@@ -21,7 +21,8 @@ const adminUser: User = {
   email: 'admin@barangay.gov.ph',
   fullName: 'Admin User',
   contactNumber: '09123456789',
-  role: 'admin'
+  role: 'admin',
+  profilePicture: '/public/uploads/profile.png'
 };
 
 interface AuthContextType {
@@ -137,7 +138,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       username,
       email,
       fullName,
-      role: 'user'
+      role: 'user',
+      profilePicture: '/public/uploads/profile.png'
     };
     
     // Add to users list and save
@@ -169,6 +171,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
     
     saveUsersToStorage(updatedUsers);
+    
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been successfully updated.",
+    });
   };
 
   return (

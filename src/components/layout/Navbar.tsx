@@ -35,6 +35,9 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     navigate('/login');
   };
 
+  // Use the user's profile picture if available, otherwise use the default
+  const profilePicture = user?.profilePicture || "/public/uploads/profile.png";
+
   return (
     <nav className="bg-barangay-blue py-2 px-4 flex items-center justify-between shadow-md">
       <div className="flex items-center space-x-4"> 
@@ -66,9 +69,9 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
             <Button variant="ghost" className="flex items-center text-white">
               <div className="rounded-full">
                 <img 
-                  src="/public/uploads/profile.png" 
+                  src={profilePicture} 
                   alt="User" 
-                  className="h-8 w-8 rounded-full"
+                  className="h-8 w-8 rounded-full object-cover"
                 />
               </div>
               <div className="flex items-center">

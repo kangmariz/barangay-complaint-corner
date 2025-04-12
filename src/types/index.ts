@@ -1,24 +1,25 @@
 
-export interface User {
-  id: string;
-  fullName: string;
-  username: string;
-  email: string;
-  contactNumber: string;
-  role: 'admin' | 'resident';
-}
-
+// Define the Complaint type
 export interface Complaint {
   id: number;
   title: string;
   description: string;
   purok: string;
-  location?: string;
-  status: 'Pending' | 'In Progress' | 'Resolved';
   photo?: string;
+  status: 'Pending' | 'In Progress' | 'Resolved';
+  createdAt: string;
+  userId?: string;
   anonymous: boolean;
   fullName?: string;
   contactNumber?: string;
-  userId?: string;
+  comments?: Comment[];
+}
+
+// Define the Comment type
+export interface Comment {
+  id: number;
+  text: string;
   createdAt: string;
+  userId: string;
+  userName: string;
 }
