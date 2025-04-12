@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 const EditComplaintPage: React.FC = () => {
   const { user } = useAuth();
@@ -40,7 +40,7 @@ const EditComplaintPage: React.FC = () => {
   const [showNotEditable, setShowNotEditable] = useState(false);
   
   useEffect(() => {
-    if (id && userComplaints) {
+    if (id && userComplaints && userComplaints.length > 0) {
       const foundComplaint = userComplaints.find(c => c.id === parseInt(id));
       if (foundComplaint) {
         setComplaint(foundComplaint);
@@ -78,6 +78,8 @@ const EditComplaintPage: React.FC = () => {
       return;
     }
     
+    if (!complaint) return;
+    
     const updatedComplaint = {
       ...complaint,
       title,
@@ -91,11 +93,6 @@ const EditComplaintPage: React.FC = () => {
     
     updateComplaint(updatedComplaint);
     setShowSuccess(true);
-    
-    toast({
-      title: "Changes saved",
-      description: "Your complaint has been successfully updated.",
-    });
     
     setTimeout(() => {
       navigate('/my-complaints');

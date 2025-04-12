@@ -2,21 +2,32 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, ComplaintTable } from '@/components';
 import { useComplaints } from '@/context/ComplaintContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Complaint } from '@/types';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 const MyComplaintsPage: React.FC = () => {
   const { user } = useAuth();
   const { userComplaints, searchComplaints } = useComplaints();
-  const [searchResults, setSearchResults] = useState(userComplaints);
+  const [searchResults, setSearchResults] = useState<Complaint[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
+  // Initialize search results with user complaints
+  useEffect(() => {
+    if (userComplaints) {
+      setSearchResults(userComplaints);
+    }
+  }, [userComplaints]);
   
   // Listen for status updates
   useEffect(() => {
-    const handleStatusUpdate = (detail: any) => {
+    const handleStatusUpdate = (event: CustomEvent) => {
+      const detail = event.detail;
       if (detail?.status) {
         setNotification(`Complaint status updated to ${detail.status}`);
         setTimeout(() => setNotification(null), 3000);
@@ -38,6 +49,10 @@ const MyComplaintsPage: React.FC = () => {
   const canEdit = (complaint: Complaint): boolean => {
     return complaint.status === 'Pending';
   };
+
+  const handleCreateNew = () => {
+    navigate('/submit-complaint');
+  };
   
   // Redirect if not logged in
   if (!user) {
@@ -47,7 +62,15 @@ const MyComplaintsPage: React.FC = () => {
   return (
     <Layout onSearch={handleSearch}>
       <div className="container mx-auto p-6">
-        <h1 className="text-black text-2xl font-bold mb-6">My Complaints</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-black text-2xl font-bold">My Complaints</h1>
+          <Button 
+            onClick={handleCreateNew}
+            className="bg-barangay-blue hover:bg-blue-700 text-white"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" /> New Complaint
+          </Button>
+        </div>
         
         {notification && (
           <Alert className="bg-green-50 border-green-200 mb-4">

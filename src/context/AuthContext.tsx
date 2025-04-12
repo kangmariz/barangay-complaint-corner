@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>; // Adjusted to return boolean
+  login: (username: string, password: string) => Promise<boolean>;
   signup: (fullName: string, username: string, password: string, email: string) => Promise<boolean>;
   logout: () => void;
   updateUserProfile: (userData: Partial<User>) => void;
@@ -13,41 +13,55 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users data for demonstration
-const mockUsers: User[] = [
-  {
-    id: '1',
-    fullName: 'John Doe',
-    username: 'john',
-    email: 'john@example.com',
-    contactNumber: '09123456789',
-    role: 'resident'
-  },
-  {
-    id: '2',
-    fullName: 'Admin User',
-    username: 'admin',
-    email: 'admin@example.com',
-    contactNumber: '09123456788',
-    role: 'admin'
+// Initialize users from localStorage or use mock data if not available
+const getInitialUsers = (): User[] => {
+  const savedUsers = localStorage.getItem('barangay_users');
+  if (savedUsers) {
+    return JSON.parse(savedUsers);
   }
-];
+  
+  // Default mock users if no saved data
+  return [
+    {
+      id: '1',
+      fullName: 'John Doe',
+      username: 'john',
+      email: 'john@example.com',
+      contactNumber: '09123456789',
+      role: 'resident'
+    },
+    {
+      id: '2',
+      fullName: 'Admin User',
+      username: 'admin',
+      email: 'admin@example.com',
+      contactNumber: '09123456788',
+      role: 'admin'
+    }
+  ];
+};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [users, setUsers] = useState<User[]>(getInitialUsers);
   const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
 
+  // Load saved user session on initial render
   useEffect(() => {
-    // Check for saved user in localStorage on initial load
     const savedUser = localStorage.getItem('barangay_user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => { // Changed to return boolean
+  // Save users to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('barangay_users', JSON.stringify(users));
+  }, [users]);
+
+  const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const foundUser = mockUsers.find(u => u.username === username);
+      const foundUser = users.find(u => u.username === username);
   
       if (foundUser && password === 'password') { // Simulating password check
         setUser(foundUser);
@@ -58,7 +72,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           description: `Welcome back, ${foundUser.fullName}!`,
         });
 
-        // Return true for successful login
         return true;
       }
   
@@ -67,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login failed",
         description: "Invalid username or password",
       });
-      return false; // Return false if login failed
+      return false;
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -75,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login error",
         description: "An error occurred while trying to log in.",
       });
-      return false; // Return false on error
+      return false;
     }
   };
 
@@ -87,7 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   ): Promise<boolean> => {
     try {
       // Check if username already exists
-      if (mockUsers.some(u => u.username === username)) {
+      if (users.some(u => u.username === username)) {
         toast({
           variant: "destructive",
           title: "Signup failed",
@@ -98,17 +111,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // Create new user
       const newUser: User = {
-        id: (mockUsers.length + 1).toString(),
+        id: (users.length + 1).toString(),
         fullName,
         username,
         email,
-        contactNumber: '', // Keep contactNumber for compatibility, but it's empty
+        contactNumber: '', // Empty by default
         role: 'resident'
       };
 
-      // In a real app, this would be an API call to create a user account
-      mockUsers.push(newUser);
+      // Add to users array and update localStorage
+      const updatedUsers = [...users, newUser];
+      setUsers(updatedUsers);
       setUser(newUser);
+      
+      // Save to localStorage
+      localStorage.setItem('barangay_users', JSON.stringify(updatedUsers));
       localStorage.setItem('barangay_user', JSON.stringify(newUser));
       
       toast({
@@ -139,14 +156,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUserProfile = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('barangay_user', JSON.stringify(updatedUser));
       
-      // Update in mock data too
-      const userIndex = mockUsers.findIndex(u => u.id === user.id);
-      if (userIndex >= 0) {
-        mockUsers[userIndex] = updatedUser;
-      }
+      // Update in users array
+      const updatedUsers = users.map(u => 
+        u.id === user.id ? updatedUser : u
+      );
+      
+      setUsers(updatedUsers);
+      setUser(updatedUser);
+      
+      // Update in localStorage
+      localStorage.setItem('barangay_users', JSON.stringify(updatedUsers));
+      localStorage.setItem('barangay_user', JSON.stringify(updatedUser));
       
       toast({
         title: "Profile updated",

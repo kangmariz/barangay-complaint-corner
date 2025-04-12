@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Complaint } from '@/types';
 import { useAuth } from './AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,8 +16,8 @@ interface ComplaintContextType {
 
 const ComplaintContext = createContext<ComplaintContextType | undefined>(undefined);
 
-// Mock data for complaints
-const initialComplaints: Complaint[] = [
+// Initial mock data for complaints
+const initialComplaintsData: Complaint[] = [
   {
     id: 1,
     title: 'Flooded Road',
@@ -43,9 +43,19 @@ const initialComplaints: Complaint[] = [
 ];
 
 export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
+  // Initialize state with data from localStorage or initial data if not available
+  const [complaints, setComplaints] = useState<Complaint[]>(() => {
+    const savedComplaints = localStorage.getItem('complaints');
+    return savedComplaints ? JSON.parse(savedComplaints) : initialComplaintsData;
+  });
+  
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Save to localStorage whenever complaints change
+  useEffect(() => {
+    localStorage.setItem('complaints', JSON.stringify(complaints));
+  }, [complaints]);
 
   // Get complaints that belong to the current user
   const userComplaints = user 
@@ -56,15 +66,21 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     : [];
 
   const addComplaint = (newComplaint: Omit<Complaint, 'id' | 'status' | 'createdAt'>) => {
+    // Find the highest ID to ensure uniqueness
+    const highestId = complaints.reduce((max, complaint) => 
+      complaint.id > max ? complaint.id : max, 0);
+    
     const complaintToAdd: Complaint = {
       ...newComplaint,
-      id: complaints.length + 1,
+      id: highestId + 1,
       status: 'Pending',
       createdAt: new Date().toISOString(),
       userId: user?.id
     };
     
-    setComplaints([...complaints, complaintToAdd]);
+    const updatedComplaints = [...complaints, complaintToAdd];
+    setComplaints(updatedComplaints);
+    
     toast({
       title: "Complaint submitted",
       description: "Your complaint has been successfully submitted.",
@@ -72,17 +88,23 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const updateComplaint = (updatedComplaint: Complaint) => {
-    setComplaints(
-      complaints.map(complaint => 
-        complaint.id === updatedComplaint.id
-          ? { ...updatedComplaint }
-          : complaint
-      )
+    const updatedComplaints = complaints.map(complaint => 
+      complaint.id === updatedComplaint.id
+        ? { ...updatedComplaint }
+        : complaint
     );
+    
+    setComplaints(updatedComplaints);
+    
+    toast({
+      title: "Complaint updated",
+      description: "Your complaint has been successfully updated.",
+    });
   };
 
   const deleteComplaint = (id: number) => {
-    setComplaints(complaints.filter(complaint => complaint.id !== id));
+    const updatedComplaints = complaints.filter(complaint => complaint.id !== id);
+    setComplaints(updatedComplaints);
     
     toast({
       title: "Complaint deleted",
@@ -91,13 +113,13 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const updateComplaintStatus = (id: number, status: Complaint['status']) => {
-    setComplaints(
-      complaints.map(complaint => 
-        complaint.id === id 
-          ? { ...complaint, status } 
-          : complaint
-      )
+    const updatedComplaints = complaints.map(complaint => 
+      complaint.id === id 
+        ? { ...complaint, status } 
+        : complaint
     );
+    
+    setComplaints(updatedComplaints);
     
     // Dispatch event for status change
     window.dispatchEvent(

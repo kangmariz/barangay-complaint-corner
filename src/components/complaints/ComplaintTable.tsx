@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Complaint } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
@@ -44,8 +44,14 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   const { updateComplaintStatus, deleteComplaint } = useComplaints();
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin';
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [complaintToDelete, setComplaintToDelete] = React.useState<Complaint | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [complaintToDelete, setComplaintToDelete] = useState<Complaint | null>(null);
+  const [localComplaints, setLocalComplaints] = useState<Complaint[]>(complaints);
+  
+  // Update local complaints when the props change
+  React.useEffect(() => {
+    setLocalComplaints(complaints);
+  }, [complaints]);
   
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -62,6 +68,15 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   
   const handleStatusChange = (id: number, value: string) => {
     updateComplaintStatus(id, value as Complaint['status']);
+    
+    // Update local state for immediate UI update
+    setLocalComplaints(
+      localComplaints.map(complaint => 
+        complaint.id === id 
+          ? { ...complaint, status: value as Complaint['status'] } 
+          : complaint
+      )
+    );
   };
 
   const handleEditComplaint = (complaint: Complaint) => {
@@ -81,7 +96,13 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   
   const handleConfirmDelete = () => {
     if (complaintToDelete) {
+      // Delete from context (which updates localStorage)
       deleteComplaint(complaintToDelete.id);
+      
+      // Update local state for immediate UI update
+      setLocalComplaints(localComplaints.filter(c => c.id !== complaintToDelete.id));
+      
+      // Close dialog
       setDeleteDialogOpen(false);
       setComplaintToDelete(null);
     }
@@ -105,14 +126,14 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {complaints.length === 0 ? (
+            {localComplaints.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-8 text-gray-500">
                   No complaints found
                 </TableCell>
               </TableRow>
             ) : (
-              complaints.map((complaint) => (
+              localComplaints.map((complaint) => (
                 <TableRow key={complaint.id}>
                   <TableCell>{complaint.id}</TableCell>
                   <TableCell>{complaint.title}</TableCell>
