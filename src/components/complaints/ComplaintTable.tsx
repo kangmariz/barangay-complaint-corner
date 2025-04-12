@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Complaint } from '@/types';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +34,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ComplaintTableProps {
   complaints: Complaint[];
@@ -62,8 +62,8 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [commentComplaintId, setCommentComplaintId] = useState<number | null>(null);
+  const isMobile = useIsMobile();
   
-  // Update local complaints when the props change
   useEffect(() => {
     setLocalComplaints(complaints);
   }, [complaints]);
@@ -84,7 +84,6 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
   const handleStatusChange = (id: number, value: string) => {
     updateComplaintStatus(id, value as Complaint['status']);
     
-    // Update local state for immediate UI update
     setLocalComplaints(
       localComplaints.map(complaint => 
         complaint.id === id 
@@ -93,7 +92,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
       )
     );
   };
-
+  
   const handleEditComplaint = (complaint: Complaint) => {
     navigate(`/edit-complaint/${complaint.id}`);
   };
@@ -111,13 +110,8 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
   
   const handleConfirmDelete = () => {
     if (complaintToDelete) {
-      // Delete from context (which updates localStorage)
       deleteComplaint(complaintToDelete.id);
-      
-      // Update local state for immediate UI update
       setLocalComplaints(localComplaints.filter(c => c.id !== complaintToDelete.id));
-      
-      // Close dialog
       setDeleteDialogOpen(false);
       setComplaintToDelete(null);
     }
@@ -147,7 +141,6 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
     setCommentText('');
     setCommentDialogOpen(false);
     
-    // Update UI for comment count
     setLocalComplaints(prevComplaints => 
       prevComplaints.map(complaint => {
         if (complaint.id === commentComplaintId) {
@@ -165,6 +158,192 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
       })
     );
   };
+  
+  if (isMobile) {
+    return (
+      <>
+        <div className="space-y-4">
+          {localComplaints.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No complaints found
+            </div>
+          ) : (
+            localComplaints.map((complaint) => (
+              <div 
+                key={complaint.id}
+                className="bg-white border rounded-lg p-4 shadow-sm"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-medium text-lg">{complaint.title}</h3>
+                    <p className="text-xs text-gray-500">ID: {complaint.id}</p>
+                  </div>
+                  {isAdmin && !readOnly ? (
+                    <Select 
+                      defaultValue={complaint.status} 
+                      onValueChange={(value) => updateComplaintStatus(complaint.id, value as Complaint['status'])}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="Resolved">Resolved</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge 
+                      variant="outline" 
+                      className={getStatusColor(complaint.status)}
+                    >
+                      {complaint.status}
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="mb-2">
+                  <p className="text-sm line-clamp-2">{complaint.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                  <div>
+                    <span className="font-semibold">Location:</span> {complaint.purok}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Date:</span> {format(new Date(complaint.createdAt), 'MMM d, yyyy')}
+                  </div>
+                  
+                  {isAdmin && (
+                    <div className="col-span-2">
+                      <span className="font-semibold">Contact:</span> {complaint.anonymous ? 
+                        <span className="text-gray-400">Anonymous</span> : 
+                        `${complaint.fullName} (${complaint.contactNumber})`}
+                    </div>
+                  )}
+                </div>
+                
+                {!hideActions && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleViewDetails(complaint)} 
+                      className="text-purple-500 flex-grow"
+                    >
+                      <FileText className="h-4 w-4 mr-1" />
+                      Details
+                    </Button>
+                    
+                    {!isAdmin && isEditable && isEditable(complaint) && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => navigate(`/edit-complaint/${complaint.id}`)} 
+                        className="text-blue-500 flex-grow"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    )}
+                    
+                    {isAdmin && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleAddCommentClick(complaint.id)} 
+                        className="text-green-500 flex-grow"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Comment
+                        {complaint.comments && complaint.comments.length > 0 && (
+                          <span className="ml-1 bg-green-100 text-green-800 rounded-full px-2 py-0.5 text-xs">
+                            {complaint.comments.length}
+                          </span>
+                        )}
+                      </Button>
+                    )}
+                    
+                    {isAdmin && complaint.status === 'Resolved' && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDeleteClick(complaint)} 
+                        className="text-red-500 flex-grow"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this resolved complaint? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex justify-between">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        <ComplaintDetails 
+          complaint={selectedComplaint} 
+          isOpen={viewDetailsOpen} 
+          onOpenChange={setViewDetailsOpen} 
+        />
+        
+        <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Comment</DialogTitle>
+              <DialogDescription>
+                Add a comment to this complaint to provide feedback or instructions for the resident.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <Input
+                placeholder="Type your comment here..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                className="w-full"
+              />
+              {commentText.trim() === '' && (
+                <p className="text-red-500 text-xs mt-1">Comment cannot be empty</p>
+              )}
+            </div>
+            <DialogFooter className="flex justify-between mt-4">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button 
+                onClick={handleSubmitComment} 
+                disabled={commentText.trim() === ''}
+              >
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Submit Comment
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
   
   return (
     <>
@@ -202,7 +381,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        onClick={() => handleViewPhoto(complaint.photo)}
+                        onClick={() => complaint.photo && window.open(complaint.photo, '_blank')}
                         className="text-blue-500 p-0 underline"
                       >
                         <Eye className="h-4 w-4 mr-1" />
@@ -216,7 +395,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
                     {isAdmin && !readOnly ? (
                       <Select 
                         defaultValue={complaint.status} 
-                        onValueChange={(value) => handleStatusChange(complaint.id, value)}
+                        onValueChange={(value) => updateComplaintStatus(complaint.id, value as Complaint['status'])}
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue placeholder="Status" />
@@ -268,7 +447,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            onClick={() => handleEditComplaint(complaint)} 
+                            onClick={() => navigate(`/edit-complaint/${complaint.id}`)} 
                             className="text-blue-500"
                           >
                             <Pencil className="h-4 w-4 mr-1" />
@@ -314,7 +493,6 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
         </Table>
       </div>
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -335,14 +513,12 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
         </DialogContent>
       </Dialog>
       
-      {/* View Details Dialog */}
       <ComplaintDetails 
         complaint={selectedComplaint} 
         isOpen={viewDetailsOpen} 
         onOpenChange={setViewDetailsOpen} 
       />
       
-      {/* Add Comment Dialog */}
       <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
         <DialogContent>
           <DialogHeader>

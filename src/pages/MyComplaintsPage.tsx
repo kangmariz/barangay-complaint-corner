@@ -8,16 +8,26 @@ import { Complaint } from '@/types';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Filter } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const MyComplaintsPage: React.FC = () => {
   const { user } = useAuth();
   const { userComplaints, searchComplaints } = useComplaints();
   const [searchResults, setSearchResults] = useState<Complaint[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   // Initialize search results with user complaints
   useEffect(() => {
@@ -48,7 +58,34 @@ const MyComplaintsPage: React.FC = () => {
   
   const handleSearch = (query: string) => {
     const results = searchComplaints(query);
-    setSearchResults(results);
+    applyFilters(results);
+  };
+  
+  // Function to filter complaints by status
+  const applyFilters = (complaints: Complaint[]) => {
+    if (statusFilter === "all") {
+      setSearchResults(complaints);
+    } else {
+      const filtered = complaints.filter(
+        complaint => complaint.status.toLowerCase() === statusFilter.toLowerCase()
+      );
+      setSearchResults(filtered);
+    }
+  };
+  
+  // Handle status filter change
+  const handleFilterChange = (value: string) => {
+    setStatusFilter(value);
+    if (userComplaints) {
+      if (value === "all") {
+        setSearchResults(userComplaints);
+      } else {
+        const filtered = userComplaints.filter(
+          complaint => complaint.status.toLowerCase() === value.toLowerCase()
+        );
+        setSearchResults(filtered);
+      }
+    }
   };
   
   // Function to check if complaint is editable
@@ -67,15 +104,30 @@ const MyComplaintsPage: React.FC = () => {
   
   return (
     <Layout onSearch={handleSearch}>
-      <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:p-6">
+        <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'} mb-6`}>
           <h1 className="text-black text-2xl font-bold">My Complaints</h1>
-          <Button 
-            onClick={handleCreateNew}
-            className="bg-barangay-blue hover:bg-blue-700 text-white"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" /> New Complaint
-          </Button>
+          <div className={`flex ${isMobile ? 'flex-col w-full gap-2' : 'gap-4'}`}>
+            <Select value={statusFilter} onValueChange={handleFilterChange}>
+              <SelectTrigger className={`${isMobile ? 'w-full' : 'w-[180px]'}`}>
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Complaints</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in progress">In Progress</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              onClick={handleCreateNew}
+              className="bg-barangay-blue hover:bg-blue-700 text-white"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" /> New Complaint
+            </Button>
+          </div>
         </div>
         
         {notification && (
@@ -87,7 +139,7 @@ const MyComplaintsPage: React.FC = () => {
           </Alert>
         )}
         
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
           <ComplaintTable 
             complaints={searchResults} 
             isEditable={canEdit} 
