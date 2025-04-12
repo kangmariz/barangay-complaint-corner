@@ -26,9 +26,9 @@ const adminUser: User = {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => void;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  signup: (username: string, email: string, password: string) => void;
+  signup: (fullName: string, username: string, password: string, email: string) => Promise<boolean>;
   updateUserProfile: (profileData: Partial<User>) => void;
 }
 
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
   
-  const login = (username: string, password: string) => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     // In a real app, validate credentials against API
     // Here, we're just checking against our mock users in localStorage
     if (username === 'admin' && password === 'password') {
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login Successful",
         description: "Welcome back, Admin!",
       });
-      return;
+      return true;
     }
     
     // Check regular users
@@ -96,12 +96,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login Successful",
         description: `Welcome back, ${foundUser.fullName || foundUser.username}!`,
       });
+      return true;
     } else {
       toast({
         variant: "destructive",
         title: "Login Failed",
         description: "Invalid username or password",
       });
+      return false;
     }
   };
 
@@ -114,7 +116,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  const signup = (username: string, email: string, password: string) => {
+  const signup = async (fullName: string, username: string, password: string, email: string): Promise<boolean> => {
     // In a real app, send request to API for signup
     // For now, just add to our mock users list
     const users = getUsersFromStorage();
@@ -126,7 +128,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Signup Failed",
         description: "Username already taken",
       });
-      return;
+      return false;
     }
     
     // Create new user
@@ -134,6 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: Date.now().toString(),
       username,
       email,
+      fullName,
       role: 'user'
     };
     
@@ -149,6 +152,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       title: "Account Created",
       description: "Your account has been successfully created.",
     });
+    return true;
   };
 
   const updateUserProfile = (profileData: Partial<User>) => {

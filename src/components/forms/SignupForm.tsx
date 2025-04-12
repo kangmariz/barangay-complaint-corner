@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BarangayLogo } from '@/components';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const SignupForm: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -40,10 +40,8 @@ const SignupForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const success = await signup(fullName, username, password, email);
-      if (success) {
-        navigate('/home');
-      }
+      // Order of parameters matches the updated function signature
+      await signup(fullName, username, password, email);
     } catch (error) {
       console.error("Signup error:", error);
       setErrors({ form: "Failed to create account. Please try again." });

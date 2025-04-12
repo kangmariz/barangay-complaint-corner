@@ -21,17 +21,7 @@ const LoginForm: React.FC = () => {
 
     try {
       const success = await login(username, password);
-
-      if (success) {
-        // After successful login, navigate based on user role
-        if (user?.role === 'admin') {
-          navigate('/dashboard');  // Redirect to dashboard if admin
-        } else {
-          navigate('/home');  // Redirect to home if resident
-        }
-      } else {
-        setErrors({ credentials: "Invalid username or password" });
-      }
+      // No longer need to check if success is truthy as it's properly typed now
     } catch (error) {
       console.error("Login error:", error);
       setErrors({ form: "Failed to log in. Please try again." });
