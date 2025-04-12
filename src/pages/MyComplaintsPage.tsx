@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const MyComplaintsPage: React.FC = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ const MyComplaintsPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Complaint[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Initialize search results with user complaints
   useEffect(() => {
@@ -30,6 +32,10 @@ const MyComplaintsPage: React.FC = () => {
       const detail = event.detail;
       if (detail?.status) {
         setNotification(`Complaint status updated to ${detail.status}`);
+        toast({
+          title: "Status Updated",
+          description: `Complaint status changed to ${detail.status}`,
+        });
         setTimeout(() => setNotification(null), 3000);
       }
     };
@@ -38,7 +44,7 @@ const MyComplaintsPage: React.FC = () => {
     return () => {
       window.removeEventListener('complaintStatusUpdated', handleStatusUpdate as EventListener);
     };
-  }, []);
+  }, [toast]);
   
   const handleSearch = (query: string) => {
     const results = searchComplaints(query);

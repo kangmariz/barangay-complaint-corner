@@ -12,9 +12,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CheckCircle, Upload, Camera, User } from 'lucide-react';
 
 const ProfileForm: React.FC = () => {
   const { user, updateUserProfile } = useAuth();
@@ -23,6 +24,7 @@ const ProfileForm: React.FC = () => {
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
   const [contactNumber, setContactNumber] = useState(user?.contactNumber || '');
+  const [profilePicture, setProfilePicture] = useState<string | undefined>(user?.profilePicture);
   
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -38,10 +40,15 @@ const ProfileForm: React.FC = () => {
     updateUserProfile({
       fullName,
       email,
-      contactNumber
+      contactNumber,
+      profilePicture
     });
     
     setProfileUpdateSuccess(true);
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been successfully updated.",
+    });
     setTimeout(() => setProfileUpdateSuccess(false), 3000);
   };
   
@@ -69,12 +76,27 @@ const ProfileForm: React.FC = () => {
     
     // In a real app, you would call an API to change the password
     setPasswordUpdateSuccess(true);
+    toast({
+      title: "Password Changed",
+      description: "Your password has been successfully updated.",
+    });
     setTimeout(() => setPasswordUpdateSuccess(false), 3000);
     
     // Reset form
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
+  };
+
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProfilePicture(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
   
   return (
@@ -102,6 +124,31 @@ const ProfileForm: React.FC = () => {
               </Alert>
             )}
             <form onSubmit={handleProfileUpdate} className="space-y-6">
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative mb-4">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={profilePicture} alt={fullName} />
+                    <AvatarFallback>
+                      <User className="h-12 w-12 text-gray-400" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Label 
+                    htmlFor="profile-picture" 
+                    className="absolute bottom-0 right-0 bg-barangay-blue text-white rounded-full p-2 cursor-pointer"
+                  >
+                    <Camera className="h-4 w-4" />
+                    <Input 
+                      id="profile-picture" 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden"
+                      onChange={handleProfilePictureChange}
+                    />
+                  </Label>
+                </div>
+                <p className="text-sm text-gray-500">Click the camera icon to change your profile picture</p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input

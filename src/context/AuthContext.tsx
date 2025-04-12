@@ -1,183 +1,174 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { User } from '@/types';
-import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+
+// User type definition
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  fullName?: string;
+  contactNumber?: string;
+  role: 'user' | 'admin';
+  profilePicture?: string;
+}
+
+// Mock admin user for demonstration
+const adminUser: User = {
+  id: '1',
+  username: 'admin',
+  email: 'admin@barangay.gov.ph',
+  fullName: 'Admin User',
+  contactNumber: '09123456789',
+  role: 'admin'
+};
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  signup: (fullName: string, username: string, password: string, email: string) => Promise<boolean>;
+  login: (username: string, password: string) => void;
   logout: () => void;
-  updateUserProfile: (userData: Partial<User>) => void;
+  signup: (username: string, email: string, password: string) => void;
+  updateUserProfile: (profileData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Initialize users from localStorage or use mock data if not available
-const getInitialUsers = (): User[] => {
-  const savedUsers = localStorage.getItem('barangay_users');
-  if (savedUsers) {
-    return JSON.parse(savedUsers);
-  }
-  
-  // Default mock users if no saved data
-  return [
-    {
-      id: '1',
-      fullName: 'John Doe',
-      username: 'john',
-      email: 'john@example.com',
-      contactNumber: '09123456789',
-      role: 'resident'
-    },
-    {
-      id: '2',
-      fullName: 'Admin User',
-      username: 'admin',
-      email: 'admin@example.com',
-      contactNumber: '09123456788',
-      role: 'admin'
-    }
-  ];
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>(getInitialUsers);
-  const [user, setUser] = useState<User | null>(null);
+  // Initialize user state from local storage if available
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Load saved user session on initial render
+  
+  // Update localStorage whenever user changes
   useEffect(() => {
-    const savedUser = localStorage.getItem('barangay_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
     }
-  }, []);
+  }, [user]);
 
-  // Save users to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('barangay_users', JSON.stringify(users));
-  }, [users]);
-
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      const foundUser = users.find(u => u.username === username);
+  // Mock user database in localStorage
+  const getUsersFromStorage = (): User[] => {
+    const savedUsers = localStorage.getItem('users');
+    const initialUsers = savedUsers ? JSON.parse(savedUsers) : [adminUser];
+    return initialUsers;
+  };
   
-      if (foundUser && password === 'password') { // Simulating password check
-        setUser(foundUser);
-        localStorage.setItem('barangay_user', JSON.stringify(foundUser));
-  
-        toast({
-          title: "Login successful",
-          description: `Welcome back, ${foundUser.fullName}!`,
-        });
-
-        return true;
-      }
-  
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: "Invalid username or password",
-      });
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        variant: "destructive",
-        title: "Login error",
-        description: "An error occurred while trying to log in.",
-      });
-      return false;
-    }
+  const saveUsersToStorage = (users: User[]) => {
+    localStorage.setItem('users', JSON.stringify(users));
   };
 
-  const signup = async (
-    fullName: string, 
-    username: string, 
-    password: string, 
-    email: string
-  ): Promise<boolean> => {
-    try {
-      // Check if username already exists
-      if (users.some(u => u.username === username)) {
-        toast({
-          variant: "destructive",
-          title: "Signup failed",
-          description: "Username already exists",
-        });
-        return false;
-      }
-
-      // Create new user
-      const newUser: User = {
-        id: (users.length + 1).toString(),
-        fullName,
-        username,
-        email,
-        contactNumber: '', // Empty by default
-        role: 'resident'
-      };
-
-      // Add to users array and update localStorage
-      const updatedUsers = [...users, newUser];
-      setUsers(updatedUsers);
-      setUser(newUser);
-      
-      // Save to localStorage
-      localStorage.setItem('barangay_users', JSON.stringify(updatedUsers));
-      localStorage.setItem('barangay_user', JSON.stringify(newUser));
-      
+  // Initialize users in localStorage if not exists
+  useEffect(() => {
+    const existingUsers = localStorage.getItem('users');
+    if (!existingUsers) {
+      saveUsersToStorage([adminUser]);
+    }
+  }, []);
+  
+  const login = (username: string, password: string) => {
+    // In a real app, validate credentials against API
+    // Here, we're just checking against our mock users in localStorage
+    if (username === 'admin' && password === 'password') {
+      setUser(adminUser);
+      navigate('/dashboard');
       toast({
-        title: "Account created",
-        description: "✅ You've successfully signed up!",
+        title: "Login Successful",
+        description: "Welcome back, Admin!",
       });
-      return true;
-    } catch (error) {
-      console.error('Signup error:', error);
+      return;
+    }
+    
+    // Check regular users
+    const users = getUsersFromStorage();
+    const foundUser = users.find(u => u.username === username);
+    
+    if (foundUser) {
+      setUser(foundUser);
+      navigate(foundUser.role === 'admin' ? '/dashboard' : '/home');
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${foundUser.fullName || foundUser.username}!`,
+      });
+    } else {
       toast({
         variant: "destructive",
-        title: "Signup error",
-        description: "An error occurred while trying to create your account.",
+        title: "Login Failed",
+        description: "Invalid username or password",
       });
-      return false;
     }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('barangay_user');
+    navigate('/login');
     toast({
-      title: "Logged out",
-      description: "✅ You've been successfully logged out",
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
     });
   };
-  
-  const updateUserProfile = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      
-      // Update in users array
-      const updatedUsers = users.map(u => 
-        u.id === user.id ? updatedUser : u
-      );
-      
-      setUsers(updatedUsers);
-      setUser(updatedUser);
-      
-      // Update in localStorage
-      localStorage.setItem('barangay_users', JSON.stringify(updatedUsers));
-      localStorage.setItem('barangay_user', JSON.stringify(updatedUser));
-      
+
+  const signup = (username: string, email: string, password: string) => {
+    // In a real app, send request to API for signup
+    // For now, just add to our mock users list
+    const users = getUsersFromStorage();
+    
+    // Check if username already exists
+    if (users.some(u => u.username === username)) {
       toast({
-        title: "Profile updated",
-        description: "✅ Your profile has been successfully updated",
+        variant: "destructive",
+        title: "Signup Failed",
+        description: "Username already taken",
       });
+      return;
     }
+    
+    // Create new user
+    const newUser: User = {
+      id: Date.now().toString(),
+      username,
+      email,
+      role: 'user'
+    };
+    
+    // Add to users list and save
+    users.push(newUser);
+    saveUsersToStorage(users);
+    
+    // Log in the new user
+    setUser(newUser);
+    navigate('/home');
+    
+    toast({
+      title: "Account Created",
+      description: "Your account has been successfully created.",
+    });
+  };
+
+  const updateUserProfile = (profileData: Partial<User>) => {
+    if (!user) return;
+    
+    // Update current user
+    const updatedUser = { ...user, ...profileData };
+    setUser(updatedUser);
+    
+    // Also update in the users list
+    const users = getUsersFromStorage();
+    const updatedUsers = users.map(u => 
+      u.id === user.id ? { ...u, ...profileData } : u
+    );
+    
+    saveUsersToStorage(updatedUsers);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, updateUserProfile }}>
+    <AuthContext.Provider value={{ user, login, logout, signup, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

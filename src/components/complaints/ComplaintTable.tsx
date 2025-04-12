@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Complaint } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
-import { Pencil, Eye, Trash2 } from 'lucide-react';
+import { Pencil, Eye, Trash2, FileText } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -23,6 +23,8 @@ import {
 import { useComplaints } from '@/context/ComplaintContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import ComplaintDetails from './ComplaintDetails';
 import {
   Dialog,
   DialogContent,
@@ -43,13 +45,16 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   const { user } = useAuth();
   const { updateComplaintStatus, deleteComplaint } = useComplaints();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const isAdmin = user?.role === 'admin';
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [complaintToDelete, setComplaintToDelete] = useState<Complaint | null>(null);
   const [localComplaints, setLocalComplaints] = useState<Complaint[]>(complaints);
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   
   // Update local complaints when the props change
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalComplaints(complaints);
   }, [complaints]);
   
@@ -68,6 +73,12 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
   
   const handleStatusChange = (id: number, value: string) => {
     updateComplaintStatus(id, value as Complaint['status']);
+    
+    // Show toast notification
+    toast({
+      title: "Status Updated",
+      description: `Complaint status changed to ${value}`,
+    });
     
     // Update local state for immediate UI update
     setLocalComplaints(
@@ -102,10 +113,21 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
       // Update local state for immediate UI update
       setLocalComplaints(localComplaints.filter(c => c.id !== complaintToDelete.id));
       
+      // Show toast notification
+      toast({
+        title: "Complaint Deleted",
+        description: "The complaint has been successfully deleted.",
+      });
+      
       // Close dialog
       setDeleteDialogOpen(false);
       setComplaintToDelete(null);
     }
+  };
+  
+  const handleViewDetails = (complaint: Complaint) => {
+    setSelectedComplaint(complaint);
+    setViewDetailsOpen(true);
   };
   
   return (
@@ -195,6 +217,16 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
                   )}
                   <TableCell>
                     <div className="flex space-x-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleViewDetails(complaint)} 
+                        className="text-purple-500"
+                      >
+                        <FileText className="h-4 w-4 mr-1" />
+                        Details
+                      </Button>
+                      
                       {!isAdmin && isEditable && isEditable(complaint) && (
                         <Button 
                           variant="ghost" 
@@ -227,6 +259,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
         </Table>
       </div>
       
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -246,6 +279,13 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints, readOnly = 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* View Details Dialog */}
+      <ComplaintDetails 
+        complaint={selectedComplaint} 
+        isOpen={viewDetailsOpen} 
+        onOpenChange={setViewDetailsOpen} 
+      />
     </>
   );
 };

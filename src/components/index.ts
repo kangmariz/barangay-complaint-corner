@@ -13,6 +13,7 @@ export { default as ProfileForm } from './forms/ProfileForm';
 // Complaint Components
 export { default as ComplaintTable } from './complaints/ComplaintTable';
 export { default as ComplaintStats } from './complaints/ComplaintStats';
+export { default as ComplaintDetails } from './complaints/ComplaintDetails';
 
 // Utility Components
 export { default as BarangayLogo } from './BarangayLogo';

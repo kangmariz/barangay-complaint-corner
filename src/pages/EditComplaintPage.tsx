@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const EditComplaintPage: React.FC = () => {
   const { user } = useAuth();
@@ -94,6 +94,11 @@ const EditComplaintPage: React.FC = () => {
     updateComplaint(updatedComplaint);
     setShowSuccess(true);
     
+    toast({
+      title: "Complaint Updated",
+      description: "Your complaint has been successfully updated!",
+    });
+    
     setTimeout(() => {
       navigate('/my-complaints');
     }, 2000);
@@ -118,7 +123,7 @@ const EditComplaintPage: React.FC = () => {
       <div className="container mx-auto p-6">
         <Card className="w-full max-w-4xl mx-auto">
           {showSuccess && (
-            <Alert className="bg-green-50 border-green-200 mb-4">
+            <Alert className="bg-green-50 border-green-200 mb-4 mt-4 mx-4">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <AlertDescription className="text-green-700">
                 Your complaint has been successfully updated!
@@ -127,7 +132,7 @@ const EditComplaintPage: React.FC = () => {
           )}
           
           {showNotEditable && (
-            <Alert className="bg-amber-50 border-amber-200 mb-4">
+            <Alert className="bg-amber-50 border-amber-200 mb-4 mt-4 mx-4">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               <AlertDescription className="text-amber-700">
                 This complaint cannot be edited because its status is {complaint?.status}. Only complaints with 'Pending' status can be edited.
