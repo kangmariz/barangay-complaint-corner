@@ -188,9 +188,24 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const deleteAllResolved = () => {
+    const resolvedComplaints = complaints.filter(complaint => complaint.status === 'Resolved');
+    
+    if (resolvedComplaints.length === 0) {
+      toast({
+        title: "No Resolved Complaints",
+        description: "There are no resolved complaints to delete.",
+      });
+      return;
+    }
+    
     const updatedComplaints = complaints.filter(complaint => complaint.status !== 'Resolved');
     setComplaints(updatedComplaints);
     localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
+    
+    toast({
+      title: "Complaints Deleted",
+      description: `Successfully deleted ${resolvedComplaints.length} resolved complaint(s).`,
+    });
   };
 
   const contextValue: ComplaintContextType = {
