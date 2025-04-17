@@ -6,7 +6,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, Filter } from 'lucide-react';
+import { CheckCircle, Filter, Trash2 } from 'lucide-react';
 import { 
   Select, 
   SelectContent, 
@@ -14,14 +14,25 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 const ComplaintsPage: React.FC = () => {
   const { user } = useAuth();
-  const { complaints, searchComplaints } = useComplaints();
+  const { complaints, searchComplaints, deleteComplaint } = useComplaints();
   const [searchResults, setSearchResults] = useState(complaints);
   const { toast } = useToast();
   const [showNotification, setShowNotification] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [deleteResolvedDialogOpen, setDeleteResolvedDialogOpen] = useState(false);
   
   // Listen for status updates
   React.useEffect(() => {
@@ -55,6 +66,29 @@ const ComplaintsPage: React.FC = () => {
     setSearchResults(applyStatusFilter(complaints, value));
   };
   
+  const handleDeleteResolvedClick = () => {
+    setDeleteResolvedDialogOpen(true);
+  };
+  
+  const handleConfirmDeleteResolved = () => {
+    const resolvedComplaints = complaints.filter(complaint => complaint.status === 'Resolved');
+    let deletedCount = 0;
+    
+    resolvedComplaints.forEach(complaint => {
+      deleteComplaint(complaint.id);
+      deletedCount++;
+    });
+    
+    setSearchResults(prevResults => prevResults.filter(complaint => complaint.status !== 'Resolved'));
+    
+    toast({
+      title: "Complaints Deleted",
+      description: `${deletedCount} resolved complaints were successfully deleted.`
+    });
+    
+    setDeleteResolvedDialogOpen(false);
+  };
+  
   // Redirect non-admin users
   if (!user || user.role !== 'admin') {
     return <Navigate to="/home" replace />;
@@ -74,7 +108,15 @@ const ComplaintsPage: React.FC = () => {
           </Alert>
         )}
         
-        <div className="flex justify-end mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+          <Button 
+            variant="destructive" 
+            onClick={handleDeleteResolvedClick}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete All Resolved
+          </Button>
+          
           <div className="w-48">
             <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
               <SelectTrigger className="w-full">
@@ -97,6 +139,26 @@ const ComplaintsPage: React.FC = () => {
           <ComplaintTable complaints={searchResults} readOnly={false} />
         </div>
       </div>
+      
+      <Dialog open={deleteResolvedDialogOpen} onOpenChange={setDeleteResolvedDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete All Resolved Complaints</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete all resolved complaints? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-between">
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleConfirmDeleteResolved}>
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete All Resolved
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

@@ -84,6 +84,7 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     
     const updatedComplaints = [...complaints, complaintToAdd];
     setComplaints(updatedComplaints);
+    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
     
     toast({
       title: "Complaint submitted",
@@ -99,6 +100,7 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     );
     
     setComplaints(updatedComplaints);
+    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
     
     toast({
       title: "Complaint updated",
@@ -109,6 +111,7 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
   const deleteComplaint = (id: number) => {
     const updatedComplaints = complaints.filter(complaint => complaint.id !== id);
     setComplaints(updatedComplaints);
+    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
     
     toast({
       title: "Complaint deleted",
@@ -124,6 +127,7 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     );
     
     setComplaints(updatedComplaints);
+    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
     
     // Dispatch event for status change
     window.dispatchEvent(
@@ -160,6 +164,7 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
     
     setComplaints(updatedComplaints);
+    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
     
     toast({
       title: "Comment added",

@@ -3,7 +3,7 @@ import { Complaint } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
-import { Pencil, Eye, Trash2, FileText, MessageSquare } from 'lucide-react';
+import { Pencil, Eye, Trash2, FileText, MessageSquare, MoreVertical, Info } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -35,6 +35,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ComplaintTableProps {
   complaints: Complaint[];
@@ -235,46 +241,36 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
                       Details
                     </Button>
                     
-                    {!isAdmin && isEditable && isEditable(complaint) && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => navigate(`/edit-complaint/${complaint.id}`)} 
-                        className="text-blue-500 flex-grow"
-                      >
-                        <Pencil className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                    )}
-                    
-                    {isAdmin && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleAddCommentClick(complaint.id)} 
-                        className="text-green-500 flex-grow"
-                      >
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Comment
-                        {complaint.comments && complaint.comments.length > 0 && (
-                          <span className="ml-1 bg-green-100 text-green-800 rounded-full px-2 py-0.5 text-xs">
-                            {complaint.comments.length}
-                          </span>
+                    {isAdmin ? (
+                      <>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleAddCommentClick(complaint.id)} 
+                          className="text-green-500 flex-grow"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Comment
+                          {complaint.comments && complaint.comments.length > 0 && (
+                            <span className="ml-1 bg-green-100 text-green-800 rounded-full px-2 py-0.5 text-xs">
+                              {complaint.comments.length}
+                            </span>
+                          )}
+                        </Button>
+                        
+                        {complaint.status === 'Resolved' && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDeleteClick(complaint)} 
+                            className="text-red-500 flex-grow"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
                         )}
-                      </Button>
-                    )}
-                    
-                    {isAdmin && complaint.status === 'Resolved' && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleDeleteClick(complaint)} 
-                        className="text-red-500 flex-grow"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    )}
+                      </>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -432,58 +428,48 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
                   )}
                   {!hideActions && (
                     <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleViewDetails(complaint)} 
-                          className="text-purple-500"
-                        >
-                          <FileText className="h-4 w-4 mr-1" />
-                          Details
-                        </Button>
-                        
-                        {!isAdmin && isEditable && isEditable(complaint) && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => navigate(`/edit-complaint/${complaint.id}`)} 
-                            className="text-blue-500"
-                          >
-                            <Pencil className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                        )}
-                        
-                        {isAdmin && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleAddCommentClick(complaint.id)} 
-                            className="text-green-500"
-                          >
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            Comment
-                            {complaint.comments && complaint.comments.length > 0 && (
-                              <span className="ml-1 bg-green-100 text-green-800 rounded-full px-2 py-0.5 text-xs">
-                                {complaint.comments.length}
-                              </span>
+                      {isAdmin ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-white">
+                            <DropdownMenuItem onClick={() => handleViewDetails(complaint)} className="cursor-pointer">
+                              <FileText className="h-4 w-4 mr-2 text-purple-500" />
+                              <span>Details</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAddCommentClick(complaint.id)} className="cursor-pointer">
+                              <MessageSquare className="h-4 w-4 mr-2 text-green-500" />
+                              <span>Comment</span>
+                              {complaint.comments && complaint.comments.length > 0 && (
+                                <span className="ml-1 bg-green-100 text-green-800 rounded-full px-2 py-0.5 text-xs">
+                                  {complaint.comments.length}
+                                </span>
+                              )}
+                            </DropdownMenuItem>
+                            {complaint.status === 'Resolved' && (
+                              <DropdownMenuItem onClick={() => handleDeleteClick(complaint)} className="cursor-pointer text-red-500">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
                             )}
-                          </Button>
-                        )}
-                        
-                        {isAdmin && complaint.status === 'Resolved' && (
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <div className="flex space-x-2">
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            onClick={() => handleDeleteClick(complaint)} 
-                            className="text-red-500"
+                            onClick={() => handleViewDetails(complaint)} 
+                            className="text-purple-500"
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
+                            <FileText className="h-4 w-4 mr-1" />
+                            Details
                           </Button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </TableCell>
                   )}
                 </TableRow>
