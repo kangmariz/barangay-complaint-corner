@@ -458,17 +458,15 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleViewDetails(complaint)} 
-                            className="text-purple-500"
-                          >
-                            <FileText className="h-4 w-4 mr-1" />
-                            Details
-                          </Button>
-                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleViewDetails(complaint)} 
+                          className="text-purple-500"
+                        >
+                          <FileText className="h-4 w-4 mr-1" />
+                          Details
+                        </Button>
                       )}
                     </TableCell>
                   )}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Complaint } from '@/types';
 import { format } from 'date-fns';
@@ -23,14 +22,14 @@ const ComplaintDetails: React.FC<ComplaintDetailsProps> = ({ complaint, isOpen, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Complaint Details</DialogTitle>
           <DialogDescription>
             Review the details of this complaint
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 overflow-y-auto pr-2">
           <div className="grid grid-cols-3 gap-2">
             <div className="font-medium">Complaint ID:</div>
             <div className="col-span-2">{complaint.id}</div>
@@ -101,7 +100,7 @@ const ComplaintDetails: React.FC<ComplaintDetailsProps> = ({ complaint, isOpen, 
             </div>
           )}
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <DialogClose asChild>
             <Button>Close</Button>
           </DialogClose>
