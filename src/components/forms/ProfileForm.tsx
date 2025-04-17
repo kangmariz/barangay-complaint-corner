@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -98,7 +97,12 @@ const ProfileForm: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
-  
+
+  const handleContactNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+    setContactNumber(value);
+  };
+
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
@@ -177,9 +181,12 @@ const ProfileForm: React.FC = () => {
                 <Input
                   id="contactNumber"
                   value={contactNumber}
-                  onChange={(e) => setContactNumber(e.target.value)}
+                  onChange={handleContactNumberChange}
                   placeholder="Enter your contact number"
                   className="border border-gray-300 rounded-md"
+                  type="tel"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
                 />
               </div>
               

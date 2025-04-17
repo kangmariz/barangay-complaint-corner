@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout, ComplaintTable } from '@/components';
 import { useComplaints } from '@/context/ComplaintContext';
@@ -27,14 +26,13 @@ import {
 
 const ComplaintsPage: React.FC = () => {
   const { user } = useAuth();
-  const { complaints, searchComplaints, deleteComplaint } = useComplaints();
+  const { complaints, searchComplaints, deleteAllResolved } = useComplaints();
   const [searchResults, setSearchResults] = useState(complaints);
   const { toast } = useToast();
   const [showNotification, setShowNotification] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [deleteResolvedDialogOpen, setDeleteResolvedDialogOpen] = useState(false);
   
-  // Listen for status updates
   React.useEffect(() => {
     const handleStatusUpdate = (detail: any) => {
       if (detail?.status) {
@@ -71,25 +69,17 @@ const ComplaintsPage: React.FC = () => {
   };
   
   const handleConfirmDeleteResolved = () => {
-    const resolvedComplaints = complaints.filter(complaint => complaint.status === 'Resolved');
-    let deletedCount = 0;
-    
-    resolvedComplaints.forEach(complaint => {
-      deleteComplaint(complaint.id);
-      deletedCount++;
-    });
-    
+    deleteAllResolved();
     setSearchResults(prevResults => prevResults.filter(complaint => complaint.status !== 'Resolved'));
     
     toast({
       title: "Complaints Deleted",
-      description: `${deletedCount} resolved complaints were successfully deleted.`
+      description: "All resolved complaints were successfully deleted."
     });
     
     setDeleteResolvedDialogOpen(false);
   };
   
-  // Redirect non-admin users
   if (!user || user.role !== 'admin') {
     return <Navigate to="/home" replace />;
   }

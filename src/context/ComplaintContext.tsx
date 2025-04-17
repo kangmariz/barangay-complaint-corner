@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Complaint } from '@/types';
 import { useAuth } from './AuthContext';
@@ -13,6 +12,7 @@ interface ComplaintContextType {
   deleteComplaint: (id: number) => void;
   searchComplaints: (query: string) => Complaint[];
   addComment: (id: number, comment: string) => void;
+  deleteAllResolved: () => void;
 }
 
 const ComplaintContext = createContext<ComplaintContextType | undefined>(undefined);
@@ -187,6 +187,12 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     return filtered;
   };
 
+  const deleteAllResolved = () => {
+    const updatedComplaints = complaints.filter(complaint => complaint.status !== 'Resolved');
+    setComplaints(updatedComplaints);
+    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
+  };
+
   const contextValue: ComplaintContextType = {
     complaints,
     userComplaints,
@@ -195,7 +201,8 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     updateComplaintStatus,
     deleteComplaint,
     searchComplaints,
-    addComment
+    addComment,
+    deleteAllResolved
   };
 
   return (

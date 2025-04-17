@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useComplaints } from '@/context/ComplaintContext';
 import { useAuth } from '@/context/AuthContext';
@@ -31,6 +30,11 @@ const ComplaintForm: React.FC = () => {
   const [contactNumber, setContactNumber] = useState(user?.contactNumber || '');
   const [photo, setPhoto] = useState<File | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  const handleContactNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+    setContactNumber(value);
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,10 +116,13 @@ const ComplaintForm: React.FC = () => {
                 <Input
                   id="contactNumber"
                   value={contactNumber}
-                  onChange={(e) => setContactNumber(e.target.value)}
+                  onChange={handleContactNumberChange}
                   placeholder="Enter your contact number"
                   className="border border-gray-300 rounded-md"
                   required={!isAnonymous}
+                  type="tel"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
                 />
               </div>
             </div>

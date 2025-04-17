@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Layout, ComplaintTable } from '@/components';
 import { useComplaints } from '@/context/ComplaintContext';
@@ -29,14 +28,12 @@ const MyComplaintsPage: React.FC = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
-  // Initialize search results with user complaints
   useEffect(() => {
     if (userComplaints) {
       setSearchResults(userComplaints);
     }
   }, [userComplaints]);
   
-  // Listen for status updates
   useEffect(() => {
     const handleStatusUpdate = (event: CustomEvent) => {
       const detail = event.detail;
@@ -61,7 +58,6 @@ const MyComplaintsPage: React.FC = () => {
     applyFilters(results);
   };
   
-  // Function to filter complaints by status
   const applyFilters = (complaints: Complaint[]) => {
     if (statusFilter === "all") {
       setSearchResults(complaints);
@@ -73,7 +69,6 @@ const MyComplaintsPage: React.FC = () => {
     }
   };
   
-  // Handle status filter change
   const handleFilterChange = (value: string) => {
     setStatusFilter(value);
     if (userComplaints) {
@@ -88,7 +83,6 @@ const MyComplaintsPage: React.FC = () => {
     }
   };
   
-  // Function to check if complaint is editable
   const canEdit = (complaint: Complaint): boolean => {
     return complaint.status === 'Pending';
   };
@@ -97,7 +91,6 @@ const MyComplaintsPage: React.FC = () => {
     navigate('/submit-complaint');
   };
   
-  // Redirect if not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -107,7 +100,6 @@ const MyComplaintsPage: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:p-6">
         <h1 className="text-black text-2xl font-bold mb-4">My Complaints</h1>
         
-        {/* Reorganized filter and button - placed below title */}
         <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between'} mb-6`}>
           <Button 
             onClick={handleCreateNew}
@@ -140,13 +132,7 @@ const MyComplaintsPage: React.FC = () => {
         )}
         
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-          <ComplaintTable 
-            complaints={searchResults} 
-            isEditable={canEdit} 
-          />
-          <div className="mt-4 text-sm text-gray-600">
-            <p>Note: You can only edit complaints with "Pending" status.</p>
-          </div>
+          <ComplaintTable complaints={searchResults} isEditable={canEdit} />
         </div>
       </div>
     </Layout>
