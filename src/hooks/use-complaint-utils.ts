@@ -26,7 +26,8 @@ export const useComplaintUtils = (complaints: Complaint[], userComplaints: Compl
     if (resolvedComplaints.length === 0) {
       toast({
         title: "No Resolved Complaints",
-        description: "There are no resolved complaints to delete.",
+        description: "There are no resolved complaints to delete at this time.",
+        variant: "destructive"
       });
       return;
     }
@@ -41,8 +42,13 @@ export const useComplaintUtils = (complaints: Complaint[], userComplaints: Compl
     });
   };
 
+  const hasResolvedComplaints = (): boolean => {
+    return complaints.some(complaint => complaint.status === 'Resolved');
+  };
+
   return {
     searchComplaints,
-    deleteAllResolved
+    deleteAllResolved,
+    hasResolvedComplaints
   };
 };

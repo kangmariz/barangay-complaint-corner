@@ -64,7 +64,17 @@ const ComplaintsPage: React.FC = () => {
     setSearchResults(applyStatusFilter(complaints, value));
   };
   
+  const hasResolvedComplaints = complaints.some(complaint => complaint.status === 'Resolved');
+  
   const handleDeleteResolvedClick = () => {
+    if (!hasResolvedComplaints) {
+      toast({
+        title: "No Resolved Complaints",
+        description: "There are no resolved complaints to delete at this time.",
+        variant: "destructive"
+      });
+      return;
+    }
     setDeleteResolvedDialogOpen(true);
   };
   
@@ -102,6 +112,8 @@ const ComplaintsPage: React.FC = () => {
           <Button 
             variant="destructive" 
             onClick={handleDeleteResolvedClick}
+            disabled={!hasResolvedComplaints}
+            className={!hasResolvedComplaints ? 'opacity-50 cursor-not-allowed' : ''}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete All Resolved
