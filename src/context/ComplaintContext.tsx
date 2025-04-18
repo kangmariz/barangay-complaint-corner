@@ -1,66 +1,25 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Complaint } from '@/types';
-import { useAuth } from './AuthContext';
-import { useToast } from '@/hooks/use-toast';
 
-interface ComplaintContextType {
-  complaints: Complaint[];
-  userComplaints: Complaint[];
-  addComplaint: (complaint: Omit<Complaint, 'id' | 'status' | 'createdAt'>) => void;
-  updateComplaintStatus: (id: number, status: Complaint['status']) => void;
-  updateComplaint: (updatedComplaint: Complaint) => void;
-  deleteComplaint: (id: number) => void;
-  searchComplaints: (query: string) => Complaint[];
-  addComment: (id: number, comment: string) => void;
-  deleteAllResolved: () => void;
-}
+import React, { createContext, useContext, useEffect } from 'react';
+import { ComplaintContextType } from '@/types/complaint';
+import { useAuth } from './AuthContext';
+import { useComplaintActions } from '@/hooks/use-complaint-actions';
+import { useComplaintUtils } from '@/hooks/use-complaint-utils';
+import { useToast } from '@/hooks/use-toast';
 
 const ComplaintContext = createContext<ComplaintContextType | undefined>(undefined);
 
-// Initial mock data for complaints
-const initialComplaintsData: Complaint[] = [
-  {
-    id: 1,
-    title: 'Flooded Road',
-    description: 'Heavy rain caused severe flooding.',
-    purok: 'Purok 1',
-    status: 'Pending',
-    anonymous: false,
-    fullName: 'John Doe',
-    contactNumber: '09123456789',
-    userId: '1',
-    createdAt: new Date().toISOString(),
-    comments: []
-  },
-  {
-    id: 2,
-    title: 'Streetlight not working',
-    description: 'The streetlight in front of house number 42 is not working for 3 days now.',
-    purok: 'Purok 3',
-    status: 'Resolved',
-    anonymous: true,
-    userId: '2',
-    createdAt: new Date().toISOString(),
-    comments: []
-  }
-];
-
-export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Initialize state with data from localStorage or initial data if not available
-  const [complaints, setComplaints] = useState<Complaint[]>(() => {
-    const savedComplaints = localStorage.getItem('complaints');
-    return savedComplaints ? JSON.parse(savedComplaints) : initialComplaintsData;
-  });
-  
+export const ComplaintProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const {
+    complaints,
+    setComplaints,
+    addComplaint,
+    updateComplaint,
+    deleteComplaint,
+    updateComplaintStatus
+  } = useComplaintActions();
 
-  // Save to localStorage whenever complaints change
-  useEffect(() => {
-    localStorage.setItem('complaints', JSON.stringify(complaints));
-  }, [complaints]);
-
-  // Get complaints that belong to the current user
   const userComplaints = user 
     ? complaints.filter(complaint => 
         complaint.userId === user.id || 
@@ -68,79 +27,12 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
       )
     : [];
 
-  const addComplaint = (newComplaint: Omit<Complaint, 'id' | 'status' | 'createdAt'>) => {
-    // Find the highest ID to ensure uniqueness
-    const highestId = complaints.reduce((max, complaint) => 
-      complaint.id > max ? complaint.id : max, 0);
-    
-    const complaintToAdd: Complaint = {
-      ...newComplaint,
-      id: highestId + 1,
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-      userId: user?.id,
-      comments: []
-    };
-    
-    const updatedComplaints = [...complaints, complaintToAdd];
-    setComplaints(updatedComplaints);
-    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
-    
-    toast({
-      title: "Complaint submitted",
-      description: "Your complaint has been successfully submitted.",
-    });
-  };
+  const { searchComplaints, deleteAllResolved: deleteAllResolvedUtil } = useComplaintUtils(complaints, userComplaints);
 
-  const updateComplaint = (updatedComplaint: Complaint) => {
-    const updatedComplaints = complaints.map(complaint => 
-      complaint.id === updatedComplaint.id
-        ? { ...updatedComplaint }
-        : complaint
-    );
-    
-    setComplaints(updatedComplaints);
-    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
-    
-    toast({
-      title: "Complaint updated",
-      description: "Your complaint has been successfully updated.",
-    });
-  };
-
-  const deleteComplaint = (id: number) => {
-    const updatedComplaints = complaints.filter(complaint => complaint.id !== id);
-    setComplaints(updatedComplaints);
-    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
-    
-    toast({
-      title: "Complaint deleted",
-      description: "The complaint has been successfully removed.",
-    });
-  };
-
-  const updateComplaintStatus = (id: number, status: Complaint['status']) => {
-    const updatedComplaints = complaints.map(complaint => 
-      complaint.id === id 
-        ? { ...complaint, status } 
-        : complaint
-    );
-    
-    setComplaints(updatedComplaints);
-    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
-    
-    // Dispatch event for status change
-    window.dispatchEvent(
-      new CustomEvent('complaintStatusUpdated', { 
-        detail: { id, status } 
-      })
-    );
-    
-    toast({
-      title: "Status updated",
-      description: `Complaint has been marked as ${status}`,
-    });
-  };
+  // Save to localStorage whenever complaints change
+  useEffect(() => {
+    localStorage.setItem('complaints', JSON.stringify(complaints));
+  }, [complaints]);
 
   const addComment = (id: number, comment: string) => {
     if (!user) return;
@@ -172,42 +64,6 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
   };
 
-  const searchComplaints = (query: string): Complaint[] => {
-    if (!query) return user?.role === 'admin' ? complaints : userComplaints;
-    
-    const searchTerm = query.toLowerCase();
-    const filtered = (user?.role === 'admin' ? complaints : userComplaints).filter(
-      complaint => 
-        complaint.title.toLowerCase().includes(searchTerm) ||
-        complaint.description.toLowerCase().includes(searchTerm) ||
-        complaint.purok.toLowerCase().includes(searchTerm) ||
-        complaint.status.toLowerCase().includes(searchTerm)
-    );
-    
-    return filtered;
-  };
-
-  const deleteAllResolved = () => {
-    const resolvedComplaints = complaints.filter(complaint => complaint.status === 'Resolved');
-    
-    if (resolvedComplaints.length === 0) {
-      toast({
-        title: "No Resolved Complaints",
-        description: "There are no resolved complaints to delete.",
-      });
-      return;
-    }
-    
-    const updatedComplaints = complaints.filter(complaint => complaint.status !== 'Resolved');
-    setComplaints(updatedComplaints);
-    localStorage.setItem('complaints', JSON.stringify(updatedComplaints));
-    
-    toast({
-      title: "Complaints Deleted",
-      description: `Successfully deleted ${resolvedComplaints.length} resolved complaint(s).`,
-    });
-  };
-
   const contextValue: ComplaintContextType = {
     complaints,
     userComplaints,
@@ -215,9 +71,9 @@ export const ComplaintProvider: React.FC<{ children: ReactNode }> = ({ children 
     updateComplaint,
     updateComplaintStatus,
     deleteComplaint,
-    searchComplaints,
+    searchComplaints: (query: string) => searchComplaints(query, user?.role === 'admin'),
     addComment,
-    deleteAllResolved
+    deleteAllResolved: () => deleteAllResolvedUtil(setComplaints, toast)
   };
 
   return (
