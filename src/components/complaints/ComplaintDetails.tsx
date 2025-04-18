@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Complaint } from '@/types';
 import { format } from 'date-fns';
@@ -31,8 +30,8 @@ const ComplaintDetails: React.FC<ComplaintDetailsProps> = ({ complaint, isOpen, 
             Review the details of this complaint
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 pr-4 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-4 pr-2">
             <div className="grid grid-cols-3 gap-2">
               <div className="font-medium">Complaint ID:</div>
               <div className="col-span-2">{complaint.id}</div>
