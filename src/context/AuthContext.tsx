@@ -35,7 +35,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Initialize user state from local storage if available
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('user');
