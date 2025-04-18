@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -14,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { CheckCircle, Upload, Camera, User } from 'lucide-react';
+import { CheckCircle, Upload, Camera, User, AlertCircle } from 'lucide-react';
 
 const ProfileForm: React.FC = () => {
   const { user, updateUserProfile } = useAuth();
@@ -28,6 +29,7 @@ const ProfileForm: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   
   const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
   const [passwordUpdateSuccess, setPasswordUpdateSuccess] = useState(false);
@@ -53,9 +55,11 @@ const ProfileForm: React.FC = () => {
   
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordError(null);
     
     // Validate password
     if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords don't match");
       toast({
         variant: "destructive",
         title: "Passwords don't match",
@@ -64,27 +68,27 @@ const ProfileForm: React.FC = () => {
       return;
     }
     
-    if (currentPassword !== 'password') { // Simulating password check
+    if (currentPassword === 'password') { // Simulating password check
+      // In a real app, you would call an API to change the password
+      setPasswordUpdateSuccess(true);
+      toast({
+        title: "Password Changed",
+        description: "Your password has been successfully updated.",
+      });
+      setTimeout(() => setPasswordUpdateSuccess(false), 3000);
+      
+      // Reset form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } else {
+      setPasswordError("Current password is incorrect");
       toast({
         variant: "destructive",
         title: "Incorrect password",
         description: "Your current password is incorrect",
       });
-      return;
     }
-    
-    // In a real app, you would call an API to change the password
-    setPasswordUpdateSuccess(true);
-    toast({
-      title: "Password Changed",
-      description: "Your password has been successfully updated.",
-    });
-    setTimeout(() => setPasswordUpdateSuccess(false), 3000);
-    
-    // Reset form
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +142,7 @@ const ProfileForm: React.FC = () => {
                   </Avatar>
                   <Label 
                     htmlFor="profile-picture" 
-                    className="absolute bottom-0 right-0 bg-barangay-blue text-white rounded-full p-2 cursor-pointer"
+                    className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 cursor-pointer"
                   >
                     <Camera className="h-4 w-4" />
                     <Input 
@@ -193,7 +197,7 @@ const ProfileForm: React.FC = () => {
               <div className="flex justify-end">
                 <Button
                   type="submit"
-                  className="bg-barangay-blue text-white px-6 py-2 rounded-md"
+                  className="bg-primary text-white px-6 py-2 rounded-md"
                 >
                   Save Changes
                 </Button>
@@ -210,6 +214,16 @@ const ProfileForm: React.FC = () => {
                 </AlertDescription>
               </Alert>
             )}
+            
+            {passwordError && (
+              <Alert className="bg-red-50 border-red-200 mb-4">
+                <AlertCircle className="h-5 w-5 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  {passwordError}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handlePasswordChange} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
@@ -222,6 +236,7 @@ const ProfileForm: React.FC = () => {
                   className="border border-gray-300 rounded-md"
                   required
                 />
+                <p className="text-xs text-gray-500">Hint for testing: use "password"</p>
               </div>
               
               <div className="space-y-2">
@@ -253,7 +268,7 @@ const ProfileForm: React.FC = () => {
               <div className="flex justify-end">
                 <Button
                   type="submit"
-                  className="bg-barangay-blue text-white px-6 py-2 rounded-md"
+                  className="bg-primary text-white px-6 py-2 rounded-md"
                 >
                   Change Password
                 </Button>

@@ -41,7 +41,12 @@ const SignupForm: React.FC = () => {
     
     try {
       // Order of parameters matches the updated function signature
-      await signup(fullName, username, password, email);
+      const success = await signup(fullName, username, password, email);
+      
+      if (!success) {
+        // This handles when signup returns false but doesn't throw an error
+        setErrors({ form: "Failed to create account. Please try again." });
+      }
     } catch (error) {
       console.error("Signup error:", error);
       setErrors({ form: "Failed to create account. Please try again." });
@@ -65,7 +70,7 @@ const SignupForm: React.FC = () => {
         <hr className="border-t-4 border-[#03327b] my-4"></hr>
       </div>
       
-      <div className="w-full max-w-md rounded-lg">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-md">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
@@ -134,13 +139,13 @@ const SignupForm: React.FC = () => {
                 className="w-full p-3 border border-gray-300 rounded-md"
               />
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                <p className="text-red-500 text-sm mt-1 font-medium">{errors.confirmPassword}</p>
               )}
             </div>
           </div>
           
           {errors.form && (
-            <p className="text-red-500 text-sm text-center">{errors.form}</p>
+            <p className="text-red-500 text-sm text-center font-medium">{errors.form}</p>
           )}
           
           <div className="flex justify-center">
@@ -158,7 +163,7 @@ const SignupForm: React.FC = () => {
       <div className="mt-10 text-white">
         <p>
           Already have an account?{' '}
-          <Link to="/login" className="text-[#03327b] font-bold hover:text-[#053788FF]">
+          <Link to="/login" className="text-[#03327b] font-bold hover:text-[#053788FF] bg-white px-2 py-1 rounded">
             Log In
           </Link>
         </p>

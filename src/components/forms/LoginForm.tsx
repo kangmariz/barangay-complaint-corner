@@ -21,7 +21,9 @@ const LoginForm: React.FC = () => {
 
     try {
       const success = await login(username, password);
-      // No longer need to check if success is truthy as it's properly typed now
+      if (!success) {
+        setErrors({ credentials: "Invalid username or password" });
+      }
     } catch (error) {
       console.error("Login error:", error);
       setErrors({ form: "Failed to log in. Please try again." });
@@ -45,7 +47,7 @@ const LoginForm: React.FC = () => {
         <hr className="border-t-4 border-[#03327b] my-4"></hr>
       </div>
 
-      <div className="w-80 max-w-md rounded-lg">
+      <div className="w-80 max-w-md rounded-lg bg-white p-6 shadow-md">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Input
@@ -57,7 +59,7 @@ const LoginForm: React.FC = () => {
               className="w-full p-3 border border-gray-300 rounded-md"
             />
             {errors.username && (
-              <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+              <p className="text-red-500 text-sm mt-1 font-medium">{errors.username}</p>
             )}
           </div>
 
@@ -71,12 +73,12 @@ const LoginForm: React.FC = () => {
               className="w-full p-3 border border-gray-300 rounded-md"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              <p className="text-red-500 text-sm mt-1 font-medium">{errors.password}</p>
             )}
           </div>
           
           {(errors.credentials || errors.form) && (
-            <p className="text-red-500 text-sm text-center">
+            <p className="text-red-500 text-sm text-center font-medium">
               {errors.credentials || errors.form}
             </p>
           )}
@@ -96,7 +98,7 @@ const LoginForm: React.FC = () => {
       <div className="mt-10 text-white">
         <p>
           Don't have an account?{' '}
-          <Link to="/signup" className="text-[#03327b] font-bold hover:text-[#053788FF]">
+          <Link to="/signup" className="text-[#03327b] font-bold hover:text-[#053788FF] bg-white px-2 py-1 rounded">
             Sign Up
           </Link>
         </p>

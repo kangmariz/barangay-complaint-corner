@@ -132,6 +132,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
     
+    // Check if email already exists
+    if (users.some(u => u.email === email)) {
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: "Email address already in use",
+      });
+      return false;
+    }
+    
     // Create new user
     const newUser: User = {
       id: Date.now().toString(),
