@@ -29,11 +29,21 @@ const ComplaintForm: React.FC = () => {
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [contactNumber, setContactNumber] = useState(user?.contactNumber || '');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [photoError, setPhotoError] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState(false);
   
   const handleContactNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
     setContactNumber(value);
+  };
+  
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // No file size limit - accept any size
+      setPhoto(file);
+      setPhotoError('');
+    }
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -225,12 +235,11 @@ const ComplaintForm: React.FC = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setPhoto(e.target.files[0]);
-                  }
-                }}
+                onChange={handlePhotoChange}
               />
+              {photoError && (
+                <p className="text-red-500 text-sm mt-2">{photoError}</p>
+              )}
             </div>
           </div>
           
