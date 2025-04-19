@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useComplaints } from '@/context/ComplaintContext';
 import { useAuth } from '@/context/AuthContext';
@@ -16,11 +17,13 @@ import { Switch } from '@/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
 import { Upload, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 const ComplaintForm: React.FC = () => {
   const { addComplaint } = useComplaints();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState('');
@@ -31,6 +34,7 @@ const ComplaintForm: React.FC = () => {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleContactNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
@@ -46,54 +50,48 @@ const ComplaintForm: React.FC = () => {
     }
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Convert photo to base64 if it exists
-    let photoData;
-    if (photo) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        photoData = reader.result;
-        
-        // Create complaint object with base64 photo
-        const complaintData = {
-          title,
-          description,
-          purok,
-          anonymous: isAnonymous,
-          fullName: isAnonymous ? undefined : fullName,
-          contactNumber: isAnonymous ? undefined : contactNumber,
-          photo: photoData
-        };
-        
-        addComplaint(complaintData);
-        setShowSuccess(true);
-        
-        // Reset form after submission
-        setTitle('');
-        setDescription('');
-        setPurok('');
-        setPhoto(null);
-        
-        // Navigate to my complaints after a short delay
-        setTimeout(() => {
-          navigate('/my-complaints');
-        }, 2000);
-      };
-      
-      reader.readAsDataURL(photo);
-    } else {
-      // Create complaint object without photo
+    try {
+      // Create base complaint object without photo
       const complaintData = {
         title,
         description,
         purok,
         anonymous: isAnonymous,
         fullName: isAnonymous ? undefined : fullName,
-        contactNumber: isAnonymous ? undefined : contactNumber
+        contactNumber: isAnonymous ? undefined : contactNumber,
       };
       
+      // Handle photo separately if it exists
+      if (photo) {
+        try {
+          // Convert photo to base64 using a Promise
+          const photoData = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => {
+              console.error("Error reading file");
+              reject(new Error("Failed to read file"));
+            };
+            reader.readAsDataURL(photo);
+          });
+          
+          // Add photo data to complaint
+          Object.assign(complaintData, { photo: photoData });
+        } catch (error) {
+          console.error("Error processing photo:", error);
+          toast({
+            title: "Warning",
+            description: "There was an issue processing your photo, but your complaint will still be submitted.",
+            variant: "warning"
+          });
+        }
+      }
+      
+      // Submit the complaint
       addComplaint(complaintData);
       setShowSuccess(true);
       
@@ -107,6 +105,15 @@ const ComplaintForm: React.FC = () => {
       setTimeout(() => {
         navigate('/my-complaints');
       }, 2000);
+    } catch (error) {
+      console.error("Error submitting complaint:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem submitting your complaint. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -247,8 +254,9 @@ const ComplaintForm: React.FC = () => {
             <Button
               type="submit"
               className="bg-barangay-blue text-white px-8 py-2 rounded-md text-lg"
+              disabled={isSubmitting}
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </form>
