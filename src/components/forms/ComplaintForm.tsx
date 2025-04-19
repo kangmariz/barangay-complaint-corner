@@ -86,7 +86,8 @@ const ComplaintForm: React.FC = () => {
           toast({
             title: "Warning",
             description: "There was an issue processing your photo, but your complaint will still be submitted.",
-            variant: "warning"
+            // Change from "warning" to "default" as only "default" and "destructive" are valid variants
+            variant: "default"
           });
         }
       }
