@@ -2,6 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { useState, useEffect } from "react";
+import { 
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 interface ComplaintPhotoProps {
   photoUrl?: string;
@@ -22,7 +27,37 @@ const ComplaintPhoto = ({ photoUrl }: ComplaintPhotoProps) => {
   if (!photoUrl) return null;
 
   const handleViewPhoto = () => {
-    window.open(photoUrl, '_blank');
+    // Try to open the image in a new tab
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>Complaint Photo</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background-color: #f5f5f5;
+              }
+              img {
+                max-width: 100%;
+                max-height: 100vh;
+                object-fit: contain;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${photoUrl}" alt="Complaint Photo" />
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
+    }
   };
 
   const isBase64 = typeof photoUrl === 'string' && 
@@ -39,16 +74,27 @@ const ComplaintPhoto = ({ photoUrl }: ComplaintPhotoProps) => {
         )}
         
         {!imgError ? (
-          <img 
-            src={photoUrl} 
-            alt="Complaint" 
-            className={`max-h-64 rounded-md ${isLoading ? 'hidden' : 'block'}`}
-            onError={() => {
-              setImgError(true);
-              setIsLoading(false);
-            }}
-            onLoad={() => setIsLoading(false)}
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <img 
+                src={photoUrl} 
+                alt="Complaint" 
+                className={`max-h-64 rounded-md cursor-pointer ${isLoading ? 'hidden' : 'block'}`}
+                onError={() => {
+                  setImgError(true);
+                  setIsLoading(false);
+                }}
+                onLoad={() => setIsLoading(false)}
+              />
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 max-w-none" align="center">
+              <img 
+                src={photoUrl} 
+                alt="Complaint Full Size" 
+                className="max-h-[80vh] max-w-[90vw]"
+              />
+            </PopoverContent>
+          </Popover>
         ) : (
           <div className="bg-red-50 text-red-500 p-4 rounded-md text-center">
             Unable to display image. Click "View Full Size" to open it in a new tab.
