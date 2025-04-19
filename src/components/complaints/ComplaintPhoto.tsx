@@ -13,11 +13,22 @@ const ComplaintPhoto = ({ photoUrl }: ComplaintPhotoProps) => {
     window.open(photoUrl, '_blank');
   };
 
+  // Check if the photo is a base64 string
+  const isBase64 = photoUrl.startsWith('data:image');
+
   return (
     <div>
       <div className="font-medium mb-1">Photo:</div>
       <div className="flex justify-center">
-        <img src={photoUrl} alt="Complaint" className="max-h-64 rounded-md" />
+        <img 
+          src={photoUrl} 
+          alt="Complaint" 
+          className="max-h-64 rounded-md"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+          }}
+        />
       </div>
       <div className="text-center mt-2">
         <Button 

@@ -39,30 +39,65 @@ const ComplaintForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create complaint object
-    const complaintData = {
-      title,
-      description,
-      purok,
-      anonymous: isAnonymous,
-      fullName: isAnonymous ? undefined : fullName,
-      contactNumber: isAnonymous ? undefined : contactNumber,
-      photo: photo ? URL.createObjectURL(photo) : undefined,
-    };
-    
-    addComplaint(complaintData);
-    setShowSuccess(true);
-    
-    // Reset form after submission
-    setTitle('');
-    setDescription('');
-    setPurok('');
-    setPhoto(null);
-    
-    // Navigate to my complaints after a short delay
-    setTimeout(() => {
-      navigate('/my-complaints');
-    }, 2000);
+    // Convert photo to base64 if it exists
+    let photoData;
+    if (photo) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        photoData = reader.result;
+        
+        // Create complaint object with base64 photo
+        const complaintData = {
+          title,
+          description,
+          purok,
+          anonymous: isAnonymous,
+          fullName: isAnonymous ? undefined : fullName,
+          contactNumber: isAnonymous ? undefined : contactNumber,
+          photo: photoData
+        };
+        
+        addComplaint(complaintData);
+        setShowSuccess(true);
+        
+        // Reset form after submission
+        setTitle('');
+        setDescription('');
+        setPurok('');
+        setPhoto(null);
+        
+        // Navigate to my complaints after a short delay
+        setTimeout(() => {
+          navigate('/my-complaints');
+        }, 2000);
+      };
+      
+      reader.readAsDataURL(photo);
+    } else {
+      // Create complaint object without photo
+      const complaintData = {
+        title,
+        description,
+        purok,
+        anonymous: isAnonymous,
+        fullName: isAnonymous ? undefined : fullName,
+        contactNumber: isAnonymous ? undefined : contactNumber
+      };
+      
+      addComplaint(complaintData);
+      setShowSuccess(true);
+      
+      // Reset form after submission
+      setTitle('');
+      setDescription('');
+      setPurok('');
+      setPhoto(null);
+      
+      // Navigate to my complaints after a short delay
+      setTimeout(() => {
+        navigate('/my-complaints');
+      }, 2000);
+    }
   };
   
   return (
