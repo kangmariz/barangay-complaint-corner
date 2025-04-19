@@ -18,7 +18,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CheckCircle, Upload, Camera, User, AlertCircle } from 'lucide-react';
 
 const ProfileForm: React.FC = () => {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, verifyPassword, changePassword } = useAuth();
   const { toast } = useToast();
   
   const [fullName, setFullName] = useState(user?.fullName || '');
@@ -46,10 +46,6 @@ const ProfileForm: React.FC = () => {
     });
     
     setProfileUpdateSuccess(true);
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been successfully updated.",
-    });
     setTimeout(() => setProfileUpdateSuccess(false), 3000);
   };
   
@@ -68,27 +64,20 @@ const ProfileForm: React.FC = () => {
       return;
     }
     
-    if (currentPassword === 'password') { // Simulating password check
-      // In a real app, you would call an API to change the password
+    // Use the new changePassword function that verifies the current password
+    const success = changePassword(currentPassword, newPassword);
+    
+    if (success) {
       setPasswordUpdateSuccess(true);
-      toast({
-        title: "Password Changed",
-        description: "Your password has been successfully updated.",
-      });
-      setTimeout(() => setPasswordUpdateSuccess(false), 3000);
       
       // Reset form
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } else {
-      setPasswordError("Current password is incorrect");
-      toast({
-        variant: "destructive",
-        title: "Incorrect password",
-        description: "Your current password is incorrect",
-      });
+      
+      setTimeout(() => setPasswordUpdateSuccess(false), 3000);
     }
+    // The toast notifications are handled in the AuthContext
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +225,6 @@ const ProfileForm: React.FC = () => {
                   className="border border-gray-300 rounded-md"
                   required
                 />
-                <p className="text-xs text-gray-500">Hint for testing: use "password"</p>
               </div>
               
               <div className="space-y-2">

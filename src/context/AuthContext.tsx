@@ -12,6 +12,7 @@ export interface User {
   contactNumber?: string;
   role: 'user' | 'admin';
   profilePicture?: string;
+  password?: string; // Added password field for verification
 }
 
 // Mock admin user for demonstration
@@ -22,7 +23,8 @@ const adminUser: User = {
   fullName: 'Admin User',
   contactNumber: '09123456789',
   role: 'admin',
-  profilePicture: '/public/uploads/profile.png'
+  profilePicture: '/public/uploads/profile.png',
+  password: 'password' // Default admin password
 };
 
 interface AuthContextType {
@@ -31,6 +33,8 @@ interface AuthContextType {
   logout: () => void;
   signup: (fullName: string, username: string, password: string, email: string) => Promise<boolean>;
   updateUserProfile: (profileData: Partial<User>) => void;
+  verifyPassword: (password: string) => boolean; // Added password verification
+  changePassword: (currentPassword: string, newPassword: string) => boolean; // Added password change
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const login = async (username: string, password: string): Promise<boolean> => {
     // In a real app, validate credentials against API
-    // Here, we're just checking against our mock users in localStorage
+    // Here, we're checking against our mock users in localStorage
     if (username === 'admin' && password === 'password') {
       setUser(adminUser);
       navigate('/dashboard');
@@ -88,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Check regular users
     const users = getUsersFromStorage();
-    const foundUser = users.find(u => u.username === username);
+    const foundUser = users.find(u => u.username === username && u.password === password);
     
     if (foundUser) {
       setUser(foundUser);
@@ -149,6 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email,
       fullName,
       role: 'user',
+      password, // Store the password
       profilePicture: '/public/uploads/profile.png'
     };
     
@@ -163,6 +168,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     toast({
       title: "Account Created",
       description: "Your account has been successfully created.",
+    });
+    return true;
+  };
+
+  const verifyPassword = (password: string): boolean => {
+    if (!user) return false;
+    return user.password === password;
+  };
+
+  const changePassword = (currentPassword: string, newPassword: string): boolean => {
+    if (!user) return false;
+    
+    // Verify current password
+    if (user.password !== currentPassword) {
+      toast({
+        variant: "destructive",
+        title: "Password Change Failed",
+        description: "Current password is incorrect",
+      });
+      return false;
+    }
+    
+    // Update password in user object
+    const updatedUser = { ...user, password: newPassword };
+    setUser(updatedUser);
+    
+    // Update password in users list
+    const users = getUsersFromStorage();
+    const updatedUsers = users.map(u => 
+      u.id === user.id ? { ...u, password: newPassword } : u
+    );
+    saveUsersToStorage(updatedUsers);
+    
+    toast({
+      title: "Password Changed",
+      description: "Your password has been successfully updated.",
     });
     return true;
   };
@@ -189,7 +230,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, updateUserProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      signup, 
+      updateUserProfile,
+      verifyPassword,
+      changePassword
+    }}>
       {children}
     </AuthContext.Provider>
   );
